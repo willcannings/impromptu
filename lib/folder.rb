@@ -9,6 +9,7 @@ module Flow
     
     def provides(*modules)
       @modules += modules
+      @modules.uniq!
     end
   end
 end

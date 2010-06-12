@@ -1,25 +1,32 @@
 module Flow
   class Component
-    attr_accessor :component_set, :name, :namespace, :requires
+    attr_accessor :base, :component_set, :name, :requirements, :folders
     
-    def initialize(component_set, name, block)
+    def initialize(base, component_set, name)
+      @base = base
       @component_set = component_set
       @name = name
-      instance_eval block
+      @requirements = []
+      @folders = []
     end
     
     def requires(*components)
+      @requirements += components
+      @requirements.uniq!
     end
     
-    def folder(name)
-      self
+    # TODO: perhaps we should do full path resolution from here
+    # so we can assert there is only one folder object per path
+    def folder(*path)
+      @folders << Folder.new(base, path)
     end
     
-    def provides(*modules)
-    end
-    
-    def namespace(name)
-      @namespace = name
+    def namespace(*name)
+      if name.size == 0
+        @namespace
+      else
+        @namespace = name.first
+      end
     end
   end
 end
