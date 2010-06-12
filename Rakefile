@@ -5,8 +5,8 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "flow"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
+    gem.summary = "Component and dependency manager for Ruby"
+    gem.description = "Component and dependency manager for Ruby"
     gem.email = "me@willcannings.com"
     gem.homepage = "http://github.com/willcannings/flow"
     gem.authors = ["Will Cannings"]
