@@ -1,15 +1,16 @@
 module Flow
   module ComponentSet
-    def self.define_components(&block)
+    def self.define_components(base=nil, &block)
       # initialise
       @components = Hash.new {|hash, key| raise "Attempt to reference unknown component"}
       @modules    = Hash.new {|hash, key| raise "Attempt to reference unknown module"}
       @files      = Hash.new {|hash, key| raise "Attempt to reference unknown file"}
+      @base       = base
       
       # parse component definition files, or create components as
       # necessary directly from the supplied block
       raise "No block supplied to define_components" unless block_given?
-      instance_eval block
+      instance_eval &block
       
       # construct the component tree and ensure the validity of the
       # dependency graph between components
@@ -22,18 +23,18 @@ module Flow
     end
     
     def self.parse_file(path)
-      @base = File.dirname(path)
+      @base = Pathname.new(File.dirname(path))
       File.open(path) do |file|
         instance_eval file.read
       end
     end
 
     def self.component(name, &block)
-      if @components.has_key(name)
+      if @components.has_key?(name)
         raise "A component named '#{name}' already exists"
       else
         @components[name] = Flow::Component.new(@base, name)
-        @components[name].instance_eval block if block_given?
+        @components[name].instance_eval &block if block_given?
       end
     end
     
@@ -42,7 +43,7 @@ module Flow
       # Create any components which are expected to exist (given the component
       # hierarchy) but don't. Blank components are created to complete the tree.
       def self.create_missing_components
-        @components.each do |component|
+        @components.values.each do |component|
           next if !component.name.include?('.')
           hierarchy = component.name.split('.')
           hierarchy.size.times {|index| create_component_if_missing(component.base, hierarchy[0..index].join('.'))}
@@ -51,7 +52,7 @@ module Flow
       
       # Creates a blank component if no component by the given name exists.
       def self.create_component_if_missing(base, name)
-        return if @components.has_key(name)
+        return if @components.has_key?(name)
         @components[name] = Flow::Component.new(base, name)
       end
     
@@ -107,10 +108,12 @@ module Flow
           component.requirements.each {|required_component| root_nodes.delete required_component}
         end
         
-        # perform a depth first search from each root component. store
+        # perform a depth first search from each root component
+        seen_nodes = []
+        completed_nodes = []
         require_node = lambda do |node|
           return if completed_nodes.include?(node)
-          raise "Circular reference detected in component dependency graph" if seen_nodes.include?(node)
+          raise "Circular reference detected in component dependency graph (#{node.name})" if seen_nodes.include?(node)
           seen_nodes << node
           node.requirements.each {|node| require_node.call(node)}
           node.children.each {|child| require_node.call(child)}
@@ -119,7 +122,7 @@ module Flow
         
         root_nodes.each do |node|
           seen_nodes = []
-          complete_nodes = []
+          completed_nodes = []
           require_node.call(node)
         end
       end

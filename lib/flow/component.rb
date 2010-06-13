@@ -1,6 +1,7 @@
 module Flow
   class Component
-    attr_accessor :base, :name, :requirements, :folders, :namespace, :children, :parent
+    attr_accessor :base, :name, :requirements, :folders, :children, :parent
+    attr_writer   :namespace
     
     def initialize(base, name)
       @base = base
@@ -27,8 +28,12 @@ module Flow
     end
     
     def namespace(*name)
-      protect_from_modification
-      @namespace = name.empty? ? @namespace : name.first
+      if !name.empty?
+        protect_from_modification
+        @namespace = name.first
+      else
+        @namespace
+      end
     end
     
     
