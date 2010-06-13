@@ -36,7 +36,7 @@ module Flow
         @components[name] = Flow::Component.new(@base, name)
         @components[name].instance_eval &block if block_given?
       end
-    end
+    end    
     
 
     private
@@ -76,7 +76,7 @@ module Flow
           namespaces = []
           node = component
           namespaces << node.namespace and node = node.parent until node.nil?
-          component.namespace = namespaces.compact.reverse.join("::")
+          component.namespace = namespaces.compact.reject(&:empty?).reverse.join("::")
         end
       end
       

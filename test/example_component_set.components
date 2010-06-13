@@ -1,0 +1,18 @@
+component 'test' do
+	namespace 'Test'
+end
+
+component 'test.one' do
+	requires 'test.two', 'rfc.one'
+	folder('lib').provides :A, :B
+end
+
+component 'test.two' do
+	namespace 'Two'
+	folder('lib2').provides :C, :D
+end
+
+component 'rfc.one' do
+	folder('lib3').provides :E
+	namespace 'RFC822'
+end

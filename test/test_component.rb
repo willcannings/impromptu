@@ -16,7 +16,7 @@ class TestComponent < Test::Unit::TestCase
     end
     
     should "have a name" do
-      assert_not_equal nil, @component.name
+      assert_not_nil @component.name
     end
     
     should "have no requirements" do

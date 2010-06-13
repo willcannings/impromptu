@@ -8,7 +8,7 @@ class TestFolder < Test::Unit::TestCase
     end
     
     should "have a path" do
-      assert_not_equal nil, @folder.path
+      assert_not_nil @folder.path
     end
     
     should "respond to provides" do
