@@ -2,7 +2,7 @@ require 'helper'
 
 class TestComponent < Test::Unit::TestCase
   context "A new component" do
-    setup { @component = Flow::Component.new(Pathname.new('.'), nil, 'component') }
+    setup { @component = Flow::Component.new(Pathname.new('.'), 'component') }
     should "respond to :requires" do
       assert_respond_to @component, :requires
     end
@@ -59,4 +59,5 @@ class TestComponent < Test::Unit::TestCase
       end
     end
   end
+
 end
