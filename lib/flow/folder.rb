@@ -25,9 +25,9 @@ module Flow
     
     # loading functions
     def load_module(name)
-      # if the name is namespaced, we only care about the final component, then
+      # if the name is namespaced, traverse the namespaced folders, then
       # change from camel case to underscored
-      name = name.to_s.split('::').last
+      name = name.to_s.gsub('::', '/')
       name = name.gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').gsub(/([a-z\d])([A-Z])/,'\1_\2').downcase
       require File.join(@path, name)
     end

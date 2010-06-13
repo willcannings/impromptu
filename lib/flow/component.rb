@@ -52,9 +52,10 @@ module Flow
     
     def load_module(name)
       load and return if !loaded?
+      name = name.sub(@namespace, '')
+      
       @folders.each do |folder|
-        if folder.modules
-        end
+        folder.load_module(name) and return if folder.modules.include?(name)
       end
     end
     

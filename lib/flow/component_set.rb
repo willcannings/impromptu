@@ -20,6 +20,7 @@ module Flow
       complete_requirement_references
       freeze_components
       ensure_no_circular_dependencies_exist
+      determine_module_components
     end
     
     def self.parse_file(path)
@@ -36,7 +37,13 @@ module Flow
         @components[name] = Flow::Component.new(@base, name)
         @components[name].instance_eval &block if block_given?
       end
-    end    
+    end
+    
+    def self.load_module(name)
+      name = name.to_s
+      return @modules[name].load_module(name) if @modules.has_key?(name)
+      nil
+    end
     
 
     private
@@ -99,8 +106,7 @@ module Flow
       # Determine if any circular references exist within the dependency
       # graphs generated from any root component. It's possible to have
       # multiple segregated graphs; by searching from each root node we
-      # are guaranteed to hit every node in the entire graph at least
-      # once.
+      # are guaranteed to hit every node in the entire graph at least once.
       def self.ensure_no_circular_dependencies_exist        
         # determine which components are root components
         root_nodes = @components.values
@@ -124,6 +130,22 @@ module Flow
           seen_nodes = []
           completed_nodes = []
           require_node.call(node)
+        end
+      end
+      
+      def self.determine_module_components
+        @components.values.each do |component|
+          namespace = component.namespace.empty? ? nil : component.namespace + '::'
+          
+          component.folders.each do |folder|
+            folder.modules.each do |mod|
+              if namespace
+                @modules[namespace + mod.to_s] = component
+              else
+                @modules[mod.to_s] = component
+              end
+            end
+          end
         end
       end
     

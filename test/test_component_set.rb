@@ -63,13 +63,14 @@ class TestComponentSet < Test::Unit::TestCase
         parse_file(File.join(File.dirname(__FILE__), 'example_component_set.components'))
       end
       @components = Flow::ComponentSet.instance_variable_get('@components')
+      @modules = Flow::ComponentSet.instance_variable_get('@modules')
     end
     
     # ----------------------------------------
     # Test the component tree
     # ----------------------------------------
     should "have five components" do
-      assert_equal 5, @components.size
+      assert_equal 6, @components.size
     end
     
     should "have the undefined rfc component automatically created" do
@@ -83,9 +84,11 @@ class TestComponentSet < Test::Unit::TestCase
       assert_equal @components['test'], @components['test.two'].parent
     end
     
-    should "have the rfc component have rfc.one as a child" do
+    should "have the rfc component have rfc.one and rfc.two as a child" do
       assert @components['rfc'].children.include?(@components['rfc.one'])
+      assert @components['rfc'].children.include?(@components['rfc.two'])
       assert_equal @components['rfc'], @components['rfc.one'].parent
+      assert_equal @components['rfc'], @components['rfc.two'].parent
     end
     
     # ----------------------------------------
@@ -97,7 +100,8 @@ class TestComponentSet < Test::Unit::TestCase
     end
     
     should "set the rfc namespaces correctly" do
-      assert_equal 'RFC822', @components['rfc.one'].namespace
+      assert_equal 'RFC', @components['rfc.one'].namespace
+      assert_equal '', @components['rfc.two'].namespace
     end
     
     
@@ -116,6 +120,28 @@ class TestComponentSet < Test::Unit::TestCase
       @components.values.each do |component|
         assert component.frozen?
       end
+    end
+    
+    # ----------------------------------------
+    # Test module -> component references
+    # ----------------------------------------
+    should "have modules A and B reference test.one" do
+      assert_equal @components['test.one'], @modules['Test::A']
+      assert_equal @components['test.one'], @modules['Test::B']
+    end
+    
+    should "have modules C and D reference test.two" do
+      assert_equal @components['test.two'], @modules['Test::Two::C']
+      assert_equal @components['test.two'], @modules['Test::Two::D']
+    end
+    
+    should "have module E reference rfc.one" do
+      assert_equal @components['rfc.one'], @modules['RFC::E']
+    end
+    
+    should "have module F and RFC822::G reference rfc.two" do
+      assert_equal @components['rfc.two'], @modules['F']
+      assert_equal @components['rfc.two'], @modules['RFC822::G']
     end
   end
 end
