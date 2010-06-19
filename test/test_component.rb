@@ -2,7 +2,7 @@ require 'helper'
 
 class TestComponent < Test::Unit::TestCase
   context "A new component" do
-    setup { @component = Flow::Component.new(Pathname.new('.'), 'component') }
+    setup { @component = Impromptu::Component.new(Pathname.new('.'), 'component') }
     should "respond to :requires" do
       assert_respond_to @component, :requires
     end
@@ -55,7 +55,7 @@ class TestComponent < Test::Unit::TestCase
       end
       
       should "have a folder that is a folder" do
-        assert_instance_of Flow::Folder, @component.folders.first
+        assert_instance_of Impromptu::Folder, @component.folders.first
       end
     end
   end

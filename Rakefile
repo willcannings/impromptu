@@ -4,11 +4,11 @@ require 'rake'
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
-    gem.name = "flow"
+    gem.name = "impromptu"
     gem.summary = "Component and dependency manager for Ruby"
     gem.description = "Component and dependency manager for Ruby"
     gem.email = "me@willcannings.com"
-    gem.homepage = "http://github.com/willcannings/flow"
+    gem.homepage = "http://github.com/willcannings/impromptu"
     gem.authors = ["Will Cannings"]
     gem.add_development_dependency "shoulda"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
@@ -47,7 +47,7 @@ Rake::RDocTask.new do |rdoc|
   version = File.exist?('VERSION') ? File.read('VERSION') : ""
 
   rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "flow #{version}"
+  rdoc.title = "Impromptu #{version}"
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end

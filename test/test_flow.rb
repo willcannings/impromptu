@@ -1,6 +1,6 @@
 require 'helper'
 
-class TestFlow < Test::Unit::TestCase
+class TestImpromptu < Test::Unit::TestCase
   should "do stuff" do
     assert true
   end

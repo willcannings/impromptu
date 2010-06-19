@@ -1,4 +1,4 @@
-module Flow
+module Impromptu
   module ComponentSet
     def self.define_components(base=nil, &block)
       # initialise
@@ -34,7 +34,7 @@ module Flow
       if @components.has_key?(name)
         raise "A component named '#{name}' already exists"
       else
-        @components[name] = Flow::Component.new(@base, name)
+        @components[name] = Impromptu::Component.new(@base, name)
         @components[name].instance_eval &block if block_given?
       end
     end
@@ -60,7 +60,7 @@ module Flow
       # Creates a blank component if no component by the given name exists.
       def self.create_component_if_missing(base, name)
         return if @components.has_key?(name)
-        @components[name] = Flow::Component.new(base, name)
+        @components[name] = Impromptu::Component.new(base, name)
       end
     
       # Generate the list of child components for each component. A reference

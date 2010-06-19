@@ -4,13 +4,13 @@ class TestComponentSet < Test::Unit::TestCase
   context "A set definition" do
     should "raise an exception with no block" do
       assert_raise RuntimeError do
-        Flow::ComponentSet.define_components
+        Impromptu::ComponentSet.define_components
       end
     end
     
     should "raise an exception when a component file does not exist" do
       assert_raise Errno::ENOENT do
-        Flow::ComponentSet.define_components do
+        Impromptu::ComponentSet.define_components do
           parse_file(File.join(File.dirname(__FILE__), 'non_existent.components'))
         end
       end
@@ -18,7 +18,7 @@ class TestComponentSet < Test::Unit::TestCase
     
     should "raise an exception with simple circular dependencies" do
       assert_raise RuntimeError do
-        Flow::ComponentSet.define_components do
+        Impromptu::ComponentSet.define_components do
           component 'demo.one' do
             requires 'demo.two'
           end
@@ -31,7 +31,7 @@ class TestComponentSet < Test::Unit::TestCase
     
     should "raise an exception with distant circular dependencies" do
       assert_raise RuntimeError do
-        Flow::ComponentSet.define_components do
+        Impromptu::ComponentSet.define_components do
           # first set of components are valid (here to ensure we catch circular dependencies on latter roots)
           component 'demo.one' do
             requires 'demo.two'
@@ -59,11 +59,11 @@ class TestComponentSet < Test::Unit::TestCase
   
   context "The example component set" do
     setup do
-      Flow::ComponentSet.define_components do
+      Impromptu::ComponentSet.define_components do
         parse_file(File.join(File.dirname(__FILE__), 'example_component_set.components'))
       end
-      @components = Flow::ComponentSet.instance_variable_get('@components')
-      @modules = Flow::ComponentSet.instance_variable_get('@modules')
+      @components = Impromptu::ComponentSet.instance_variable_get('@components')
+      @modules = Impromptu::ComponentSet.instance_variable_get('@modules')
     end
     
     # ----------------------------------------

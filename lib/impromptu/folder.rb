@@ -1,4 +1,4 @@
-module Flow
+module Impromptu
   class Folder
     attr_accessor :path, :modules
     

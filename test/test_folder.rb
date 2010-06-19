@@ -2,7 +2,7 @@ require 'helper'
 
 class TestFolder < Test::Unit::TestCase
   context "A new folder" do
-    setup { @folder = Flow::Folder.new('/folder') }
+    setup { @folder = Impromptu::Folder.new('/folder') }
     should "have no modules" do
       assert_equal 0, @folder.modules.size
     end
