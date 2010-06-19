@@ -96,11 +96,11 @@ module Flow
         end
       end
     
-      # Call the freeze method on every component, preventing modification
-      # to the components after we have processed dependencies and
-      # constructed the component tree.
+      # Indicate the definition of a component is complete. We can't use
+      # the actual Object::freeze method because we need to modify the
+      # component internally during loads.
       def self.freeze_components
-        @components.values.each {|component| component.freeze}
+        @components.values.each {|component| component.frozen = true}
       end
     
       # Determine if any circular references exist within the dependency
@@ -145,6 +145,10 @@ module Flow
                 @modules[mod.to_s] = component
               end
             end
+          end
+          
+          if !component.namespace.empty? && component.create_namespace
+            @modules[component.namespace] = component
           end
         end
       end

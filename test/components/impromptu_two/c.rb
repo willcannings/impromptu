@@ -1,4 +1,4 @@
-module Test
+module Impromptu
   module Two
     module C
     end

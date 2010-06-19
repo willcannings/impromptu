@@ -1,22 +1,22 @@
-component 'test' do
-	namespace 'Test'
+component 'impromptu' do
+	namespace 'Impromptu'
 end
 
-component 'test.one' do
-	requires 'test.two', 'rfc.one'
-	folder('components', 'testone').provides :A, :B
+component 'impromptu.one' do
+	requires 'impromptu.two', 'rfc.one'
+	folder('components', 'impromptu_one').provides :A, :B
 end
 
-component 'test.two' do
+component 'impromptu.two' do
 	namespace 'Two'
-	folder('components', 'testtwo').provides :C, :D
+	folder('components', 'impromptu_two').provides :C, :D
 end
 
 component 'rfc.one' do
-	folder('components', 'rfcone').provides :E
-	namespace 'RFC'
+	folder('components', 'rfc_one').provides :E
+	namespace 'RFC', :file => 'components/rfc_one/rfc'
 end
 
 component 'rfc.two' do
-	folder('components', 'rfctwo').provides :F, :'RFC822::G'
+	folder('components', 'rfc_two').provides :F, :'RFC822::G'
 end

@@ -1,8 +1,9 @@
 module Flow
   module Autoload
     def const_missing(symbol)
-      mod = Flow::ComponentSet.load_module(symbol)
-      return mod if !mod.nil?
+      Flow::ComponentSet.load_module(symbol)
+      mod = eval symbol.to_s
+      return mod unless mod.nil?
       super(symbol)
     end
   end

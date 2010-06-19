@@ -1,0 +1,84 @@
+= Impromptu
+A lazy-loading component and dependency manager for Ruby
+
+== Motivation
+Large libraries, like web frameworks, define a lot of code that may never be used by a production running app. It would be nice to be able to pick and choose which components of a library are actually loaded and used within an application. It would be even nicer if you didn't have to manually configure which components to include.
+
+== Overview
+Impromptu allows you to define components of a system as a tree, and the dependencies between components as a graph. +const_missing+ is used to load modules and classes the first time they are used, along with any dependencies they have. By doing this, there's no need to define which components of a library are actually used; the fewest components possible are loaded simply as a result of the code you write.
+
+A simple component DSL is used to define components, before Impromptu constructs the component tree and dependency graphs:
+
+	component 'mylib' do
+		namespace 'MyLib'
+	end
+	
+	component 'mylib.lib' do
+		requires 'mylib.ext'
+		folder('lib').provides :ClassOne, :ClassTwo
+	end
+	
+	component 'mylib.ext' do
+		folder('ext').provides :CExtension
+	end
+
+The component tree generated would be:
+
+	mylib
+		- lib
+		- ext
+
+Requiring +mylib+ would also automatically load all child components as well as the main library. To be specific, you could require +mylib+.+lib+ or +mylib+.+ext+ individually. The dependency graph would be:
+
+	mylib
+	mylib.lib -> mylib.ext
+	mylib.ext
+
+Requiring +mylib+.+lib+ will also load +mylib+.+ext+; requiring +mylib+.+ext+ will only load that component. Circular dependencies are prohibited. While you can force Impromptu to load a component, it's easiest to allow it to load components as required. The definition above will make Impromptu load these modules:
+
+	MyLib
+	MyLib::ClassOne
+	MyLib::ClassTwo
+	MyLib::CExtension
+
+Namespaces can be of any depth, and higher level namespaces are automatically created by Impromptu (a blank +MyLib+ module will be created by default). If your namespace involves source, you can specify the file to load as:
+
+	namespace 'MyLib', :file => 'mylib'
+
+The location and name of modules is important. When using the +parse_file+ method, the directory containing the component definition file is used as a 'base'. Folder references are assumed to be relative to that base (or absolute if the first component begins with a '/'). e.g with the example configuration file:
+
+	$ pwd
+	/home/user/mylib
+	
+	$ ls
+	mylib.components # config above
+	lib
+	ext
+	
+	$ ls lib
+	class_one.rb
+	class_two.rb
+
+Module names are converted from camel case to underscore (namespaces contained within module names passed to +provides+ are assumed to be in separate folders, e.g)
+
+	folder('lib').provides :'Classes::ClassOne'
+	=> .../lib/classes/class_one.rb	
+
+You can either define components using a block, or in separate configuration files:
+
+	Impromptu::ComponentSet.define_components do
+		parse_file 'path'
+	end
+	
+	or
+	
+	Impromptu::ComponentSet.define_components(base_path) do
+		component 'name' do
+		end
+	end
+
+At the end of the block, Impromptu constructs the component tree and dependency graph, and you can reference the defined modules from this point.
+
+
+== Thanks
+To Matt (http://twitter.com/mattrobs) for the name
