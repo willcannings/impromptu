@@ -1,4 +1,4 @@
-module Impromptu
+module Foo
   module B
   end
 end

@@ -77,11 +77,11 @@ class TestComponentSet < Test::Unit::TestCase
       assert_not_nil @components['rfc']
     end
     
-    should "have the impromptu component have impromptu.one and impromptu.two as children" do
-      assert @components['impromptu'].children.include?(@components['impromptu.one'])
-      assert @components['impromptu'].children.include?(@components['impromptu.two'])
-      assert_equal @components['impromptu'], @components['impromptu.one'].parent
-      assert_equal @components['impromptu'], @components['impromptu.two'].parent
+    should "have the foo component have foo.one and foo.two as children" do
+      assert @components['foo'].children.include?(@components['foo.one'])
+      assert @components['foo'].children.include?(@components['foo.two'])
+      assert_equal @components['foo'], @components['foo.one'].parent
+      assert_equal @components['foo'], @components['foo.two'].parent
     end
     
     should "have the rfc component have rfc.one and rfc.two as a child" do
@@ -94,9 +94,9 @@ class TestComponentSet < Test::Unit::TestCase
     # ----------------------------------------
     # Test namespaces
     # ----------------------------------------
-    should "set the impromptu namespaces correctly" do
-      assert_equal 'Impromptu', @components['impromptu'].namespace
-      assert_equal 'Impromptu::Two', @components['impromptu.two'].namespace
+    should "set the foo namespaces correctly" do
+      assert_equal 'Foo', @components['foo'].namespace
+      assert_equal 'Foo::Two', @components['foo.two'].namespace
     end
     
     should "set the rfc namespaces correctly" do
@@ -108,9 +108,9 @@ class TestComponentSet < Test::Unit::TestCase
     # ----------------------------------------
     # Test requires are correctly resolved
     # ----------------------------------------
-    should "have the impromptu.one requirements correctly resolved" do
-      assert @components['impromptu.one'].requirements.include?(@components['impromptu.two'])
-      assert @components['impromptu.one'].requirements.include?(@components['rfc.one'])
+    should "have the foo.one requirements correctly resolved" do
+      assert @components['foo.one'].requirements.include?(@components['foo.two'])
+      assert @components['foo.one'].requirements.include?(@components['rfc.one'])
     end
     
     # ----------------------------------------
@@ -125,14 +125,14 @@ class TestComponentSet < Test::Unit::TestCase
     # ----------------------------------------
     # Test module -> component references
     # ----------------------------------------
-    should "have modules A and B reference impromptu.one" do
-      assert_equal @components['impromptu.one'], @modules['Impromptu::A']
-      assert_equal @components['impromptu.one'], @modules['Impromptu::B']
+    should "have modules A and B reference foo.one" do
+      assert_equal @components['foo.one'], @modules['Foo::A']
+      assert_equal @components['foo.one'], @modules['Foo::B']
     end
     
-    should "have modules C and D reference impromptu.two" do
-      assert_equal @components['impromptu.two'], @modules['Impromptu::Two::C']
-      assert_equal @components['impromptu.two'], @modules['Impromptu::Two::D']
+    should "have modules C and D reference foo.two" do
+      assert_equal @components['foo.two'], @modules['Foo::Two::C']
+      assert_equal @components['foo.two'], @modules['Foo::Two::D']
     end
     
     should "have module E reference rfc.one" do
@@ -148,7 +148,7 @@ class TestComponentSet < Test::Unit::TestCase
     # Test no modules currently exist
     # ----------------------------------------
     should "have no modules initially available in the object space" do
-      assert_equal false, Module.constants.include?("Impromptu")
+      assert_equal false, Module.constants.include?("Foo")
       assert_equal false, Module.constants.include?("RFC")
       assert_equal false, Module.constants.include?("F")
       assert_equal false, Module.constants.include?("RFC822")
@@ -156,17 +156,17 @@ class TestComponentSet < Test::Unit::TestCase
     
     should "not raise any exceptions when requesting modules provided by components" do
       assert_nothing_raised do
-        Object.const_missing :'Impromptu::A'
-        Impromptu::A
+        Object.const_missing :'Foo::A'
+        Foo::A
         
-        Object.const_missing :'Impromptu::B'
-        Impromptu::B
+        Object.const_missing :'Foo::B'
+        Foo::B
         
-        Object.const_missing :'Impromptu::Two::C'
-        Impromptu::Two::C
+        Object.const_missing :'Foo::Two::C'
+        Foo::Two::C
         
-        Object.const_missing :'Impromptu::Two::D'
-        Impromptu::Two::D
+        Object.const_missing :'Foo::Two::D'
+        Foo::Two::D
         
         Object.const_missing :'RFC::E'
         RFC::E
