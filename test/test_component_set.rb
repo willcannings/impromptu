@@ -69,7 +69,7 @@ class TestComponentSet < Test::Unit::TestCase
     # ----------------------------------------
     # Test the component tree
     # ----------------------------------------
-    should "have five components" do
+    should "have six components" do
       assert_equal 6, @components.size
     end
     
@@ -147,9 +147,18 @@ class TestComponentSet < Test::Unit::TestCase
     # ----------------------------------------
     # Test no modules currently exist
     # ----------------------------------------
-    should "have no modules initially available in the object space" do
-      assert_equal false, Module.constants.include?("Foo")
-      assert_equal false, Module.constants.include?("RFC")
+    should "have all required namespaces available in the object space" do
+      assert_nothing_raised {Foo}
+      assert_nothing_raised {Foo::Two}
+      assert_nothing_raised {RFC}
+    end
+    
+    should "have no component modules initially available in the object space" do
+      assert_equal false, Foo.constants.include?("A")
+      assert_equal false, Foo.constants.include?("B")
+      assert_equal false, Foo::Two.constants.include?("C")
+      assert_equal false, Foo::Two.constants.include?("D")
+      assert_equal false, RFC.constants.include?("E")
       assert_equal false, Module.constants.include?("F")
       assert_equal false, Module.constants.include?("RFC822")
     end
@@ -158,22 +167,34 @@ class TestComponentSet < Test::Unit::TestCase
       assert_nothing_raised do
         Object.const_missing :'Foo::A'
         Foo::A
-        
+      end
+      
+      assert_nothing_raised do
         Object.const_missing :'Foo::B'
         Foo::B
-        
+      end
+      
+      assert_nothing_raised do
         Object.const_missing :'Foo::Two::C'
         Foo::Two::C
-        
+      end
+      
+      assert_nothing_raised do
         Object.const_missing :'Foo::Two::D'
         Foo::Two::D
-        
+      end
+      
+      assert_nothing_raised do
         Object.const_missing :'RFC::E'
         RFC::E
-        
+      end
+      
+      assert_nothing_raised do
         Object.const_missing :'F'
         F
-        
+      end
+      
+      assert_nothing_raised do
         Object.const_missing :'RFC822::G'
         RFC822::G
       end

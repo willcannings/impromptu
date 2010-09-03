@@ -1,3 +1,5 @@
+# TODO: need way to define gem or other requirements for a component
+
 module Impromptu
   class Component
     attr_accessor :base, :name, :requirements, :folders, :children, :parent, :frozen, :create_namespace # TODO: add test for create_namespace

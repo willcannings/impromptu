@@ -20,3 +20,11 @@ end
 component 'rfc.two' do
 	folder('components', 'rfc_two').provides :F, :'RFC822::G'
 end
+
+
+# component 'yodel.admin' do
+# 	folder 'models' do
+# 		provide :A, B, :C
+# 		provide :A, :file => 'bla.so'
+# 	end
+# end
