@@ -164,40 +164,13 @@ class TestComponentSet < Test::Unit::TestCase
     end
     
     should "not raise any exceptions when requesting modules provided by components" do
-      assert_nothing_raised do
-        Object.const_missing :'Foo::A'
-        Foo::A
-      end
-      
-      assert_nothing_raised do
-        Object.const_missing :'Foo::B'
-        Foo::B
-      end
-      
-      assert_nothing_raised do
-        Object.const_missing :'Foo::Two::C'
-        Foo::Two::C
-      end
-      
-      assert_nothing_raised do
-        Object.const_missing :'Foo::Two::D'
-        Foo::Two::D
-      end
-      
-      assert_nothing_raised do
-        Object.const_missing :'RFC::E'
-        RFC::E
-      end
-      
-      assert_nothing_raised do
-        Object.const_missing :'F'
-        F
-      end
-      
-      assert_nothing_raised do
-        Object.const_missing :'RFC822::G'
-        RFC822::G
-      end
+      assert_nothing_raised {Foo::A}
+      assert_nothing_raised {Foo::B}
+      assert_nothing_raised {Foo::Two::C}
+      assert_nothing_raised {Foo::Two::D}
+      assert_nothing_raised {RFC::E}
+      assert_nothing_raised {F}
+      assert_nothing_raised {RFC822::G}
     end
   end
 end
