@@ -52,7 +52,7 @@ module Impromptu
       # hierarchy) but don't. Blank components are created to complete the tree.
       def self.create_missing_components
         @components.values.each do |component|
-          next if !component.name.include?('.')
+          next unless component.name.include?('.')
           hierarchy = component.name.split('.')
           hierarchy.size.times {|index| create_component_if_missing(component.base, hierarchy[0..index].join('.'))}
         end
@@ -160,11 +160,7 @@ module Impromptu
                 @modules[mod.to_s] = component
               end
             end
-          end
-          
-          if !component.namespace.empty? && component.create_namespace
-            @modules[component.namespace] = component
-          end
+          end          
         end
       end
     

@@ -2,7 +2,7 @@
 
 module Impromptu
   class Component
-    attr_accessor :base, :name, :requirements, :folders, :children, :parent, :frozen, :create_namespace # TODO: add test for create_namespace
+    attr_accessor :base, :name, :requirements, :folders, :children, :parent, :frozen
     attr_writer   :namespace
     
     def initialize(base, name)
@@ -33,7 +33,6 @@ module Impromptu
       unless name.nil?
         protect_from_modification
         @namespace = name
-        @create_namespace = true
         @namespace_file = options[:file]
       end
       @namespace
@@ -44,14 +43,8 @@ module Impromptu
     def load
       return if @loaded
 
-      # load or create the namespace as required
-      if @namespace && @create_namespace
-        if @namespace_file
-          require @base.join(@namespace_file)
-        else
-          eval "::#{@namespace} = Module.new"
-        end
-      end
+      # load the namespace file if the default blank namespace module isn't used
+      require @base.join(@namespace_file) if @namespace_file
       
       # declare this component loaded before loading any sub-components
       # (which may have dependencies re-requiring this component)
