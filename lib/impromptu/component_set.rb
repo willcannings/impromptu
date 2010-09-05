@@ -17,6 +17,7 @@ module Impromptu
       create_missing_components
       generate_component_tree
       determine_component_namespaces
+      create_blank_namespace_modules
       complete_requirement_references
       freeze_components
       ensure_no_circular_dependencies_exist
@@ -84,6 +85,20 @@ module Impromptu
           node = component
           namespaces << node.namespace and node = node.parent until node.nil?
           component.namespace = namespaces.compact.reject(&:empty?).reverse.join("::")
+        end
+      end
+      
+      def self.create_blank_namespace_modules
+        created_namespaces = Set.new
+        @components.values.each do |component|
+          component.namespace.split("::").inject('') do |previous, current|
+            namespace = previous + "::#{current}"
+            unless created_namespaces.include?(namespace) # FIXME: don't recreate existing modules
+              eval "#{namespace} = Module.new"
+              created_namespaces << namespace
+            end
+            namespace
+          end
         end
       end
       

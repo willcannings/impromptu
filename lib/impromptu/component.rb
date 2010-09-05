@@ -1,3 +1,5 @@
+# TODO: need way to define gem or other requirements for a component
+
 module Impromptu
   class Component
     attr_accessor :base, :name, :requirements, :folders, :children, :parent, :frozen, :create_namespace # TODO: add test for create_namespace
@@ -27,16 +29,12 @@ module Impromptu
       @folders << Folder.new(@base.join(*path).to_s)
     end
     
-    def namespace(*name)
-      unless name.empty?
+    def namespace(name=nil, options={})
+      unless name.nil?
         protect_from_modification
-        @namespace = name.first
+        @namespace = name
         @create_namespace = true
-        if name.size == 2
-          @namespace_file = name[1][:file]
-        else
-          @namespace_file = nil # required for: namespace :A, :file => ''; followed by namespace :A on the same component
-        end
+        @namespace_file = options[:file]
       end
       @namespace
     end
@@ -55,13 +53,13 @@ module Impromptu
         end
       end
       
-      # load the dependencies and modules for this component
-      @requirements.each {|component| component.load}
-      @folders.each {|folder| folder.load_all_modules}
-      
       # declare this component loaded before loading any sub-components
       # (which may have dependencies re-requiring this component)
       @loaded = true
+      
+      # load the dependencies and modules for this component
+      @requirements.each {|component| component.load}
+      @folders.each {|folder| folder.load_all_modules}
       
       # load any children underneath this component in the tree
       @children.each {|child| child.load}
