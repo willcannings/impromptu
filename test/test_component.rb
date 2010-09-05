@@ -59,5 +59,4 @@ class TestComponent < Test::Unit::TestCase
       end
     end
   end
-
 end

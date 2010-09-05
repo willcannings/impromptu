@@ -1,11 +1,11 @@
 = Impromptu
-A lazy-loading component and dependency manager for Ruby
+A lazy-loading component and dependency manager for Ruby.
 
 == Motivation
-Large libraries, like web frameworks, define a lot of code that may never be used by a production running app. It would be nice to be able to pick and choose which components of a library are actually loaded and used within an application. It would be even nicer if you didn't have to manually configure which components to include.
+Large libraries, such as web frameworks, define a lot of code that may never be used in a production running app. It would be nice if you could pick and choose which components of a library are actually loaded and used within an application. It would be even nicer if you didn't have to manually configure which components to include at all.
 
 == Overview
-Impromptu allows you to define components of a system as a tree, and the dependencies between components as a graph. +const_missing+ is used to load modules and classes the first time they are used, along with any dependencies they have. By doing this, there's no need to define which components of a library are actually used; the fewest components possible are loaded simply as a result of the code you write.
+Impromptu allows you to define components of a system as a tree and the dependencies between components as a graph. +const_missing+ is used to load modules and classes the first time they are used, along with any dependencies they have. By doing this, there's no need to define which components of a library are actually used; the fewest components possible are loaded simply as a result of the code you write.
 
 A simple component DSL is used to define components, before Impromptu constructs the component tree and dependency graphs:
 
