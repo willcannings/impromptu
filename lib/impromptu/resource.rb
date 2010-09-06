@@ -11,6 +11,15 @@ module Impromptu
       @reference    = nil
     end
     
+    def eql?(other)
+      other.name == @name
+    end
+    alias :== :eql?
+    
+    def hash
+      @name.hash
+    end
+    
     def reload
       @files.each {|file| file.reload}
     end

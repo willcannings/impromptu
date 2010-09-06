@@ -46,32 +46,40 @@ module Impromptu
     end
     
     
-    # Loading functions
     def load
       return if @loaded
-
-      # load the namespace file if the default blank namespace module isn't used
-      require @base.join(@namespace_file) if @namespace_file
       
       # declare this component loaded before loading any sub-components
       # (which may have dependencies re-requiring this component)
       @loaded = true
+
+      # load external dependencies
+      @requires.each do |requirement|
+        begin
+          require requirement
+        rescue LoadError => unavailable
+          # try loading as a gem
+          begin
+            require 'rubygems'
+          rescue LoadError
+            raise unavailable
+          end
+          require requirement
+        end
+      end
       
-      # load the dependencies and modules for this component
-      @requirements.each {|component| component.load}
-      @folders.each {|folder| folder.load_all_modules}
+      # load component dependencies
+      @dependencies.each {|component| component.load}
+
+      # FIXME: namespace will be a resource object that should be loaded
+      # load the namespace file if the default blank namespace module isn't used
+      Kernel.load @base.join(@namespace_file) if @namespace_file
+      
+      # load the resources provided by the folders of this component
+      @folders.each {|folder| folder.reload}
       
       # load any children underneath this component in the tree
       @children.each {|child| child.load}
-    end
-    
-    def load_module(name)
-      load and return unless @loaded
-      
-      name = name.sub(@namespace, '')
-      @folders.each do |folder|
-        folder.load_module(name) and return if folder.modules.include?(name)
-      end
     end
     
     private

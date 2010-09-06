@@ -1,10 +1,11 @@
 module Impromptu
   class Folder
-    attr_accessor :path, :modules
+    attr_accessor :path, :files
     
     def initialize(path)
-      @modules = OrderedSet.new
-      @path = path
+      @path   = File.expand_path(path)
+      @files  = OrderedSet.new
+      @implicitly_load_all_files = true
     end
     
     def eql?(other)
@@ -16,24 +17,32 @@ module Impromptu
       @path.hash
     end
     
-    
-    # definition functions
-    def provides(*modules)
-      @modules.merge(modules)
+    # Explicitly include a file from this folder. If you
+    # use this method, only files included by this method
+    # will be loaded. If you do not use this method, all
+    # files within this folder will be accessible.
+    def file(name, options={})
+      @implicitly_load_all_files = false
+      @files << Impromptu::File.new(File.join(@path, name), options[:provides])
     end
     
-    
-    # loading functions
-    def load_module(name)
-      # if the name is namespaced, traverse the namespaced folders, then
-      # change from camel case to underscored
-      name = name.to_s.gsub('::', '/')
-      name = name.gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').gsub(/([a-z\d])([A-Z])/,'\1_\2').downcase
-      require File.join(@path, name)
+    # Reload the files provided by this folder. If the folder
+    # is tracking a specific set of files, only those files
+    # will be reloaded. Otherwise, the folder is scanned again
+    # and any previously unseen files loaded, existing files
+    # reloaded, and removed files unloaded.
+    def reload
+      reload_file_set if @implicitly_load_all_files
+      @files.each {|file| file.reload}
     end
     
-    def load_all_modules
-      @modules.each {|name| load_module name}
-    end
+    private
+      # Determine changes between the set of files this folder knows
+      # about, and the set of files existing on disk. Any files which
+      # have been removed are unloaded (and their resources reloaded
+      # if other files define the resources as well).
+      def reload_file_set
+        # TODO
+      end
   end
 end

@@ -1,14 +1,30 @@
 module Impromptu
   class File
-    attr_reader :path, :resources, :related_resources, :related_files, :modified_time
+    attr_reader :path, :resources, :related_resources, :related_files, :modified_time, :loaded
     
-    def initialize(path)
+    def initialize(path, provides=[])
       @path               = path
       @resources          = OrderedSet.new
       @related_resources  = Set.new
       @related_files      = Set.new
       @frozen             = false
       @modified_time      = nil
+      @loaded             = false
+      
+      if provides.empty?
+        @resources << module_symbol_from_path
+      else
+        @resources.merge(provides)
+      end
+    end
+    
+    def eql?(other)
+      other.path == @path
+    end
+    alias :== :eql?
+    
+    def hash
+      @path.hash
     end
     
     # Traverse the file/resource graph to determine which total
@@ -53,6 +69,7 @@ module Impromptu
       @related_resources.each {|resource| resource.unload}
       @related_files.each {|file| Kernel.load file.path}
       @modified_time = File.mtime(@path)
+      @loaded = true
     end
     
     # Unload all of the resources provided by this file. This
@@ -72,15 +89,23 @@ module Impromptu
       File.mtime(@path) > @modified_time
     end
     
-    # Turn the path of this file into a module name. e.g:
-    # /folder/klass_one.rb => :KlassOne
-    def modularise_name
-      # remove any directory names from the path, and the file extension
-      extension = File.extname(@path)
-      name = File.basename(@path)[0..-(extension.length + 1)]
-      
-      # upcase the first character, and any characters following an underscore
-      name.gsub(/(?:^|_)(.)/) {|character| character.upcase}.to_sym
+    # Reloads the associated resources only if the underlying
+    # file has been modified since the last time it was loaded.
+    def reload_if_modified
+      reload if modified?
     end
+    
+    
+    private
+      # Turn the path of this file into a module name. e.g:
+      # /folder/klass_one.rb => :KlassOne
+      def module_symbol_from_path
+        # remove any directory names from the path, and the file extension
+        extension = File.extname(@path)
+        name = File.basename(@path)[0..-(extension.length + 1)]
+      
+        # upcase the first character, and any characters following an underscore
+        name.gsub(/(?:^|_)(.)/) {|character| character.upcase}.to_sym
+      end
   end
 end
