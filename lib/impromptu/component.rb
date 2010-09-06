@@ -1,32 +1,39 @@
-# TODO: need way to define gem or other requirements for a component
-
 module Impromptu
   class Component
-    attr_accessor :base, :name, :requirements, :folders, :children, :parent, :frozen
+    attr_accessor :base_path, :name, :dependencies, :requires, :folders, :children, :parent, :frozen
     attr_writer   :namespace
     
-    def initialize(base, name)
-      @base = base
-      @name = name
-      @requirements = OrderedSet.new
-      @folders = OrderedSet.new
+    def initialize(base_path, name)
+      @base_path    = base_path
+      @name         = name
+      @dependencies = OrderedSet.new
+      @requires     = OrderedSet.new
+      @folders      = OrderedSet.new
     end
-
-    # Utility functions
+    
+    # Extract the name of the parent of this component. e.g:
+    # 'mylib.a.b' => 'mylib.a'
     def parent_component_name
-      @name.split('.')[0..-2].join('.')
+      @parent_component_name ||= @name.split('.')[0..-2].join('.')
     end
  
- 
-    # Definition functions
-    def requires(*components)
+    # Add component dependencies to this component. e.g:
+    # depends_on 'mylib.a', 'mylib.b'
+    def depends_on(*components)
       protect_from_modification
-      @requirements.merge(components)
+      @dependencies.merge(components)
+    end
+ 
+    # Add external dependencies (such as gems) to this component. e.g:
+    # requires 'gem_name', 'other_file'
+    def requires(*resources)
+      protect_from_modification
+      @requires.merge(resources)
     end
     
     def folder(*path)
       protect_from_modification
-      @folders << Folder.new(@base.join(*path).to_s)
+      @folders << Folder.new(@base_path.join(*path).to_s)
     end
     
     def namespace(name=nil, options={})

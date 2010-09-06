@@ -1,5 +1,20 @@
 module Impromptu
   module ComponentSet
+    def self.components
+      @components ||= Hash.new {|hash, key| raise "Attempt to reference unknown component"}
+    end
+    
+    def self.files
+      @files ||= Hash.new {|hash, key| raise "Attempt to reference unknown file"}
+    end
+    
+    def self.resources
+      @resources ||= Hash.new {|hash, key| raise "Attempt to reference unknown resource"}
+    end
+    
+    
+    
+    
     def self.define_components(base=nil, &block)
       # initialise
       @components = Hash.new {|hash, key| raise "Attempt to reference unknown component"}

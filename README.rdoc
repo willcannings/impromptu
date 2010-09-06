@@ -14,12 +14,15 @@ A simple component DSL is used to define components, before Impromptu constructs
 	end
 	
 	component 'mylib.lib' do
-		requires 'mylib.ext'
-		folder('lib').provides :ClassOne, :ClassTwo
+		depends_on  'mylib.ext'
+		requires    'some_gem'
+		folder      'lib'       # contains class_one.rb, class_two.rb
 	end
 	
 	component 'mylib.ext' do
-		folder('ext').provides :CExtension
+		folder 'ext' do
+		  file 'cextension.dylib', :provides => :CExtension
+		end
 	end
 
 The component tree generated would be:
@@ -28,7 +31,7 @@ The component tree generated would be:
 		- lib
 		- ext
 
-Requiring +mylib+ would also automatically load all child components as well as the main library. To be specific, you could require +mylib+.+lib+ or +mylib+.+ext+ individually. The dependency graph would be:
+Requiring +mylib+ would also automatically load all child components as well as the main library. To only load a sub-component you would require +mylib+.+lib+ or +mylib+.+ext+ individually. The dependency graph would be:
 
 	mylib
 	mylib.lib -> mylib.ext
@@ -41,9 +44,9 @@ Requiring +mylib+.+lib+ will also load +mylib+.+ext+; requiring +mylib+.+ext+ wi
 	MyLib::ClassTwo
 	MyLib::CExtension
 
-Namespaces can be of any depth, and higher level namespaces are automatically created by Impromptu (a blank +MyLib+ module will be created by default). If your namespace involves source, you can specify the file to load as:
+Namespaces can be of any depth and are automatically created by Impromptu (a blank +MyLib+ module will be created by default). If your namespace involves source, you can specify the file to load as:
 
-	namespace 'MyLib', :file => 'mylib'
+	namespace 'MyLib', :file => 'mylib.rb'
 
 The location and name of modules is important. When using the +parse_file+ method, the directory containing the component definition file is used as a 'base'. Folder references are assumed to be relative to that base (or absolute if the first component begins with a '/'). e.g with the example configuration file:
 
