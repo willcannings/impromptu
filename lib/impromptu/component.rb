@@ -33,7 +33,9 @@ module Impromptu
     
     def folder(*path)
       protect_from_modification
-      @folders << Folder.new(@base_path.join(*path).to_s)
+      folder = Folder.new(@base_path.join(*path).to_s)
+      @folders << folder
+      yield folder if block_given?
     end
     
     def namespace(name=nil, options={})

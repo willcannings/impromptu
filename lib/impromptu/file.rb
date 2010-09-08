@@ -1,6 +1,6 @@
 module Impromptu
   class File
-    attr_reader :path, :resources, :related_resources, :related_files, :modified_time, :loaded
+    attr_reader :path, :resources, :related_resources, :related_files, :modified_time
     
     def initialize(path, provides=[])
       @path               = path
@@ -9,7 +9,6 @@ module Impromptu
       @related_files      = Set.new
       @frozen             = false
       @modified_time      = nil
-      @loaded             = false
       
       if provides.empty?
         @resources << module_symbol_from_path
@@ -69,7 +68,6 @@ module Impromptu
       @related_resources.each {|resource| resource.unload}
       @related_files.each {|file| Kernel.load file.path}
       @modified_time = File.mtime(@path)
-      @loaded = true
     end
     
     # Unload all of the resources provided by this file. This
@@ -79,6 +77,7 @@ module Impromptu
     # will unload the resource completely.
     def unload
       resources.each {|resource| resource.unload}
+      @modified_time = nil
     end
     
     # Returns true if the current modification time of the
@@ -93,6 +92,11 @@ module Impromptu
     # file has been modified since the last time it was loaded.
     def reload_if_modified
       reload if modified?
+    end
+    
+    # Indicates if this file is currently loaded
+    def loaded?
+      !@modified_time.nil?
     end
     
     
