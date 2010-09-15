@@ -8,11 +8,15 @@ module Impromptu
       @implicitly_load_all_files = true
     end
     
+    # Override eql? so ordered set can determine equality between folders
+    # based on paths (since the path hash is defined as the folder's hash)
     def eql?(other)
       other.path == @path
     end
-    alias :== :eql?
     
+    # Override hash so two folders with the same path will result in the
+    # same hash value. We need to override eql? as well to ensure folders
+    # with the same path and 
     def hash
       @path.hash
     end

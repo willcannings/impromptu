@@ -20,7 +20,6 @@ module Impromptu
     def eql?(other)
       other.path == @path
     end
-    alias :== :eql?
     
     def hash
       @path.hash

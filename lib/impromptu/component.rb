@@ -1,12 +1,11 @@
 module Impromptu
   class Component
-    attr_accessor :base_path, :name, :dependencies, :requires, :folders, :children, :parent, :frozen
+    attr_accessor :base_path, :name, :requires, :folders, :frozen
     attr_writer   :namespace
     
     def initialize(base_path, name)
       @base_path    = base_path
       @name         = name
-      @dependencies = OrderedSet.new
       @requires     = OrderedSet.new
       @folders      = OrderedSet.new
     end
@@ -15,13 +14,6 @@ module Impromptu
     # 'mylib.a.b' => 'mylib.a'
     def parent_component_name
       @parent_component_name ||= @name.split('.')[0..-2].join('.')
-    end
- 
-    # Add component dependencies to this component. e.g:
-    # depends_on 'mylib.a', 'mylib.b'
-    def depends_on(*components)
-      protect_from_modification
-      @dependencies.merge(components)
     end
  
     # Add external dependencies (such as gems) to this component. e.g:
@@ -33,8 +25,7 @@ module Impromptu
     
     def folder(*path)
       protect_from_modification
-      folder = Folder.new(@base_path.join(*path).to_s)
-      @folders << folder
+      folder = @folders << Folder.new(@base_path.join(*path).to_s)
       yield folder if block_given?
     end
     
@@ -70,9 +61,6 @@ module Impromptu
         end
       end
       
-      # load component dependencies
-      @dependencies.each {|component| component.load}
-
       # FIXME: namespace will be a resource object that should be loaded
       # load the namespace file if the default blank namespace module isn't used
       Kernel.load @base.join(@namespace_file) if @namespace_file
