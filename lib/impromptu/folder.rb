@@ -2,21 +2,20 @@ module Impromptu
   class Folder
     attr_accessor :path, :files
     
-    def initialize(path)
-      @path   = File.expand_path(path)
+    def initialize(path, options={})
+      @path   = path
       @files  = OrderedSet.new
       @implicitly_load_all_files = true
     end
     
-    # Override eql? so ordered set can determine equality between folders
-    # based on paths (since the path hash is defined as the folder's hash)
+    # Override eql? so two folders with the same path will be
+    # considered equal by ordered set.
     def eql?(other)
       other.path == @path
     end
     
-    # Override hash so two folders with the same path will result in the
-    # same hash value. We need to override eql? as well to ensure folders
-    # with the same path and 
+    # Override hash so two folders with the same path will result
+    # in the same hash value.
     def hash
       @path.hash
     end
@@ -46,7 +45,23 @@ module Impromptu
       # have been removed are unloaded (and their resources reloaded
       # if other files define the resources as well).
       def reload_file_set
-        # TODO
+        # collect all the files currently in this folder
+        paths = Dir.entries(@path).collect {|file_name| File.join(@path, file_name)}
+        paths.reject! {|path| !File.file?(path)}
+        files = Set.new(paths.collect {|path| Impromptu::File.new(path)})
+        
+        # ignore any files that have already been loaded, and remove
+        # files which used to exist but don't anymore
+        @files.each do |file|
+          unless files.include?(file)
+            @files.delete(file)
+            file.remove
+          end
+          files.delete(file)
+        end
+        
+        # any files left are new to this folder
+        @files.merge(files.to_a)
       end
   end
 end

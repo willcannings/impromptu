@@ -17,10 +17,14 @@ module Impromptu
       end
     end
     
+    # Override eql? so two files with the same path will be
+    # considered equal by ordered set.
     def eql?(other)
       other.path == @path
     end
     
+    # Override hash so two files with the same path will result
+    # in the same hash value.
     def hash
       @path.hash
     end
@@ -54,6 +58,14 @@ module Impromptu
       end
       
       @frozen = true
+    end
+    
+    # Unfreeze this file by clearing the related files and
+    # resources lists.
+    def unfreeze
+      @related_resources = nil
+      @related_files = nil
+      @frozen = false
     end
     
     # Load (or reload) all of the resources provided by this
@@ -96,6 +108,23 @@ module Impromptu
     # Indicates if this file is currently loaded
     def loaded?
       !@modified_time.nil?
+    end
+    
+    # Remove a file from the list of files related to this file.
+    def remove_related_file(file)
+      @related_files.delete(file)
+    end
+    
+    # Delete references to this file from any resources or other files.
+    def remove
+      @related_files.each {|file| file.remove_related_file(self)}
+      @resources.each do |resource|
+        if resource.files.length == 1
+          resource.remove
+        else
+          resource.remove_file(self)
+        end
+      end
     end
     
     

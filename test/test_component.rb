@@ -28,13 +28,13 @@ class TestComponent < Test::Unit::TestCase
     end
     
     context "with two requirements" do
-      setup { @component.requires('component2', 'component3.subcomponent') }
+      setup { @component.requires('gem', 'other') }
       should "store two requirements" do
         assert_equal 2, @component.requirements.size
       end
       
       context "and with two more, overlapping requirements" do
-        setup { @component.requires('component3.subcomponent', 'component4') }
+        setup { @component.requires('another', 'gem') }
         should "only store new requirements" do
           assert_equal 3, @component.requirements.size
         end
@@ -42,14 +42,14 @@ class TestComponent < Test::Unit::TestCase
     end
     
     context "with a namespace" do
-      setup { @component.namespace("context") }
+      setup { @component.namespace(:Framework) }
       should "have a namespace" do
-        assert_equal "context", @component.namespace
+        assert_equal :Framework, @component.namespace
       end
     end
     
     context "with a folder" do
-      setup { @component.folder('lib') }
+      setup { @component.folder('framework') }
       should "have one folder" do
         assert_equal 1, @component.folders.size
       end
@@ -58,5 +58,9 @@ class TestComponent < Test::Unit::TestCase
         assert_instance_of Impromptu::Folder, @component.folders.first
       end
     end
+    
+    # TODO: test freezing
+    # TODO: test protect from modification exceptions
+    # TODO: test load_external_dependencies
   end
 end

@@ -18,6 +18,12 @@ module Impromptu
     def merge(items)
       items.each {|item| self.<< item}
     end
+    
+    def delete(item)
+      self.include?(item) or return
+      @items_hash.delete(item)
+      @items_list.delete(item)
+    end
 
     def include?(item)
       @items_hash.has_key?(item)

@@ -1,57 +1,75 @@
 module Impromptu
   class Component
-    attr_accessor :base_path, :name, :requires, :folders, :frozen
+    attr_accessor :base_path, :name, :requirements, :folders, :frozen
     attr_writer   :namespace
     
-    def initialize(base_path, name)
-      @base_path    = base_path
+    # Create a new component. base_path is the 'current working
+    # directory' of the component, and all folder paths will be
+    # joined with this path to create an absolute path. Name is
+    # the name of the component and is currently only used as a
+    # reference. Names must be unique amongst all components, so
+    # to avoid clashes a namespacing scheme should be used.
+    def initialize(base_path=nil, name)
+      @base_path    = base_path || Pathname.new('.').realpath
       @name         = name
-      @requires     = OrderedSet.new
+      @requirements = OrderedSet.new
       @folders      = OrderedSet.new
+      @frozen       = false
     end
     
-    # Extract the name of the parent of this component. e.g:
-    # 'mylib.a.b' => 'mylib.a'
-    def parent_component_name
-      @parent_component_name ||= @name.split('.')[0..-2].join('.')
-    end
- 
     # Add external dependencies (such as gems) to this component. e.g:
-    # requires 'gem_name', 'other_file'
+    # requires 'gem_name', 'other_file'. May be called multiple times.
     def requires(*resources)
       protect_from_modification
-      @requires.merge(resources)
+      @requirements.merge(resources)
     end
     
-    def folder(*path)
+    # Declare a folder implementing this component. All source files
+    # within this folder are assumed to define the resources of this
+    # component. Sub-folders by default provide nested namespaces,
+    # and when used in combination with the namespace method can
+    # produce multi-level namespaces. For example, a root folder 'src'
+    # which contains a sub-folder 'plugins', and a file 'testing.rb'
+    # would provide the resource Plugins::Testing. If namespace was
+    # used to define a root namespace for the component, that namespace
+    # would precede the Plugins namespace. To turn off this behaviour
+    # set the nested_namespaces option to false. e.g:
+    # folder 'src', nested_namespaces: false
+    def folder(path, options={})
       protect_from_modification
-      folder = @folders << Folder.new(@base_path.join(*path).to_s)
+      path = [path] if path.is_a?(String)
+      folder = @folders << Folder.new(@base_path.join(*path).to_s, options)
       yield folder if block_given?
     end
     
-    def namespace(name=nil, options={})
+    # Define a namespace used for all resources provided by this
+    # component. This becomes the root namespace for all top level
+    # folders. e.g if you declare a namespace ':Root', and a single
+    # folder 'src' which contains a file 'klass.rb', klass.rb will
+    # declare the resource Root::Klass. By default, nested folders
+    # will extend the namespace with the name of the folder. For
+    # instance, if the src folder contained another called 'plugins'
+    # which contained a file 'testing.rb', the resource
+    # Root::Plugins::Testing would be defined. Folder declarations
+    # can override this behaviour.
+    def namespace(name=nil)
       unless name.nil?
         protect_from_modification
         @namespace = name
-        @namespace_file = options[:file]
       end
       @namespace
     end
     
-    
-    def load
-      return if @loaded
-      
-      # declare this component loaded before loading any sub-components
-      # (which may have dependencies re-requiring this component)
-      @loaded = true
-
-      # load external dependencies
-      @requires.each do |requirement|
+    # Load the external dependencies required by this component. If
+    # the require fails, ruby gems is loaded and the require attempted
+    # again. Any failures after this point will cause a LoadError
+    # exception to bubble through your application.
+    def load_external_dependencies
+      return if @dependencies_loaded
+      @requirements.each do |requirement|
         begin
           require requirement
         rescue LoadError => unavailable
-          # try loading as a gem
           begin
             require 'rubygems'
           rescue LoadError
@@ -60,16 +78,18 @@ module Impromptu
           require requirement
         end
       end
-      
-      # FIXME: namespace will be a resource object that should be loaded
-      # load the namespace file if the default blank namespace module isn't used
-      Kernel.load @base.join(@namespace_file) if @namespace_file
-      
-      # load the resources provided by the folders of this component
-      @folders.each {|folder| folder.reload}
-      
-      # load any children underneath this component in the tree
-      @children.each {|child| child.load}
+      @dependencies_loaded = true
+    end
+    
+    # Mark a component as 'frozen'. Modification of the component
+    # requirements or folders are not allowed after this point.
+    def freeze
+      @frozen = true
+    end
+    
+    # True if the component definition has been frozen.
+    def frozen?
+      @frozen
     end
     
     private
