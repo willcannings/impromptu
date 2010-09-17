@@ -66,7 +66,7 @@ module Impromptu
     # again. Any failures after this point will cause a LoadError
     # exception to bubble through your application.
     def load_external_dependencies
-      return if @dependencies_loaded
+      return false if @dependencies_loaded
       @requirements.each do |requirement|
         begin
           require requirement

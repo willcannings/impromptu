@@ -115,10 +115,18 @@ class TestComponent < Test::Unit::TestCase
       end
       
       should "load external requirements when requested" do
-        @component.load_external_dependencies
+        success = @component.load_external_dependencies
+        assert_equal true, success
         assert_nothing_raised do
           Matrix
         end
+      end
+      
+      should "only load requirements once" do
+        success = @component.load_external_dependencies
+        assert_equal true, success
+        success = @component.load_external_dependencies
+        assert_equal false, success
       end
     end
   end
