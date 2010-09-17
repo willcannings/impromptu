@@ -1,9 +1,11 @@
 module Impromptu
   class File
-    attr_reader :path, :resources, :related_resources, :related_files, :modified_time
+    attr_reader :path, :folder, :resources, :related_resources, :related_files, :modified_time
+    RELOADABLE_EXTENSIONS = %w{rb}
     
-    def initialize(path, provides=[])
+    def initialize(path, folder, provides=[])
       @path               = path
+      @folder             = folder
       @resources          = OrderedSet.new
       @related_resources  = Set.new
       @related_files      = Set.new
@@ -77,7 +79,7 @@ module Impromptu
     # subsections of the component graph to be reloaded together.
     def reload
       @related_resources.each {|resource| resource.unload}
-      @related_files.each {|file| Kernel.load file.path}
+      @related_files.each {|file| Kernel.load file.path if file.reloadable?}
       @modified_time = File.mtime(@path)
     end
     
@@ -115,7 +117,9 @@ module Impromptu
       @related_files.delete(file)
     end
     
-    # Delete references to this file from any resources or other files.
+    # Delete references to this file from any resources or other
+    # files. This does not unload the resource, so if loaded, the
+    # resource will be defined by a file which is no longer tracked.
     def remove
       @related_files.each {|file| file.remove_related_file(self)}
       @resources.each do |resource|
@@ -125,6 +129,18 @@ module Impromptu
           resource.remove_file(self)
         end
       end
+    end
+    
+    def add_resource_definition
+      # TODO
+    end
+    
+    # True if the file has never been loaded before, or if the
+    # file is of a type that can be reloaded (i.e ruby source
+    # as opposed to C extensions).
+    def reloadable?
+      return true if !loaded?
+      RELOADABLE_EXTENSIONS.include?(@path.extname)
     end
     
     

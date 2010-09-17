@@ -3,18 +3,6 @@ module Impromptu
     @components ||= Hash.new {|hash, key| raise "Attempt to reference unknown component"}
   end
   
-  def self.files
-    @files ||= Hash.new {|hash, key| raise "Attempt to reference unknown file"}
-  end
-  
-  def self.remove_file(file)
-    self.files.delete(file)
-  end
-  
-  def self.add_file(file)
-    self.files[file] = file
-  end
-  
   def self.resources
     @resources ||= Hash.new {|hash, key| raise "Attempt to reference unknown resource"}
   end

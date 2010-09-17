@@ -9,12 +9,14 @@ module Impromptu
     # the name of the component and is currently only used as a
     # reference. Names must be unique amongst all components, so
     # to avoid clashes a namespacing scheme should be used.
-    def initialize(base_path=nil, name)
+    def initialize(base_path, name)
       @base_path    = base_path || Pathname.new('.').realpath
       @name         = name
       @requirements = OrderedSet.new
       @folders      = OrderedSet.new
+      @namespace    = nil
       @frozen       = false
+      @dependencies_loaded = false
     end
     
     # Add external dependencies (such as gems) to this component. e.g:
@@ -37,8 +39,7 @@ module Impromptu
     # folder 'src', nested_namespaces: false
     def folder(path, options={})
       protect_from_modification
-      path = [path] if path.is_a?(String)
-      folder = @folders << Folder.new(@base_path.join(*path).to_s, options)
+      folder = @folders << Folder.new(@base_path.join(*path), options)
       yield folder if block_given?
     end
     

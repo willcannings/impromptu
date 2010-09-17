@@ -1,32 +1,51 @@
+# TODO: protect_from_modification as in component
+
 module Impromptu
   class Folder
-    attr_accessor :path, :files
+    DEFAULT_OPTIONS   = {nested_namespaces: true}
+    SOURCE_EXTENSIONS = %w{rb so bundle}
+    attr_accessor :folder, :files
     
+    # Register a new folder containing source files for a
+    # component. Path is a Pathname object representing the
+    # folder, and options may be:
+    # * nested_namespaces: true by default. If true, sub-
+    #   folders indicate a new namespace for resources. For
+    #   instance, a folder with a root of 'src', containing
+    #   a folder called 'plugins' which has a file 'klass.rb'
+    #   would define the resource Plugins::Klass. When false,
+    #   the file would simply produce Klass.
     def initialize(path, options={})
-      @path   = path
-      @files  = OrderedSet.new
+      @folder   = path
+      @options  = DEFAULT_OPTIONS.merge(options)
+      @files    = OrderedSet.new
       @implicitly_load_all_files = true
     end
     
     # Override eql? so two folders with the same path will be
     # considered equal by ordered set.
     def eql?(other)
-      other.path == @path
+      other.folder == @folder
     end
     
     # Override hash so two folders with the same path will result
     # in the same hash value.
     def hash
-      @path.hash
+      @folder.hash
     end
     
-    # Explicitly include a file from this folder. If you
-    # use this method, only files included by this method
-    # will be loaded. If you do not use this method, all
-    # files within this folder will be accessible.
+    # Explicitly include a file from this folder. If you use this
+    # method, only files included by this method will be loaded.
+    # If you do not use this method, all files within this folder
+    # will be accessible. For this reason, you probably want to
+    # separate out files which need to be defined this way into a
+    # folder separate to the majority of your source files. Options
+    # may be:
+    # * provides (required): an array of symbols, or a symbol
+    #   inidicating the name of the resource(s) provided by the file
     def file(name, options={})
       @implicitly_load_all_files = false
-      @files << Impromptu::File.new(File.join(@path, name), options[:provides])
+      @files << Impromptu::File.new(@folder.join(*name).realpath, self, options[:provides])
     end
     
     # Reload the files provided by this folder. If the folder
@@ -39,29 +58,36 @@ module Impromptu
       @files.each {|file| file.reload}
     end
     
-    private
-      # Determine changes between the set of files this folder knows
-      # about, and the set of files existing on disk. Any files which
-      # have been removed are unloaded (and their resources reloaded
-      # if other files define the resources as well).
-      def reload_file_set
-        # collect all the files currently in this folder
-        paths = Dir.entries(@path).collect {|file_name| File.join(@path, file_name)}
-        paths.reject! {|path| !File.file?(path)}
-        files = Set.new(paths.collect {|path| Impromptu::File.new(path)})
-        
-        # ignore any files that have already been loaded, and remove
-        # files which used to exist but don't anymore
-        @files.each do |file|
-          unless files.include?(file)
-            @files.delete(file)
-            file.remove
-          end
-          files.delete(file)
+    # Determine changes between the set of files this folder
+    # knows about, and the set of files existing on disk. Any
+    # files which have been removed are unloaded (and their
+    # resources reloaded if other files define the resources
+    # as well), and any new files insert their resources in to
+    # the known resources tree.
+    def reload_file_set
+      return unless @implicitly_load_all_files
+      old_file_set = @files.to_a
+      new_file_set = []
+      
+      # find all current files and add them if necessary
+      @folder.find do |path|
+        next unless source_file?(path)
+        file = Impromptu::File.new(path.realpath, self)
+        new_file_set << file
+        unless @files.include?(file)
+          @files.push(file).add_resource_definition
         end
-        
-        # any files left are new to this folder
-        @files.merge(files.to_a)
+      end
+      
+      # remove any files which have been deleted
+      deleted_files = old_file_set - new_file_set
+      deleted_files.each {|file| @files.delete(file).remove}
+    end
+    
+    
+    private
+      def source_file?(path)
+        path.file? && SOURCE_EXTENSIONS.include?(path.extname)
       end
   end
 end

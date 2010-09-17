@@ -8,19 +8,20 @@ module Impromptu
     end
     
     def <<(item)
-      if !include?(item)
+      unless self.include?(item)
         @items_hash[item] = item
         @items_list << item
       end
       @items_hash[item]
     end
+    alias :push :<<
     
     def merge(items)
       items.each {|item| self.<< item}
     end
     
     def delete(item)
-      self.include?(item) or return
+      self.include?(item) or return nil
       @items_hash.delete(item)
       @items_list.delete(item)
     end
