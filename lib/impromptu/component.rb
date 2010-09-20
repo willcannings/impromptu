@@ -37,10 +37,9 @@ module Impromptu
     # would precede the Plugins namespace. To turn off this behaviour
     # set the nested_namespaces option to false. e.g:
     # folder 'src', nested_namespaces: false
-    def folder(path, options={})
+    def folder(path, options={}, &block)
       protect_from_modification
-      folder = @folders << Folder.new(@base_path.join(*path), options)
-      yield folder if block_given?
+      folder = @folders << Folder.new(@base_path.join(*path), options, block)
     end
     
     # Define a namespace used for all resources provided by this

@@ -78,8 +78,22 @@ module Impromptu
     # dependencies between files and resources can cause large
     # subsections of the component graph to be reloaded together.
     def reload
+      # TODO: how to handle C extensions? we can reload a source extension, but not C?
       @related_resources.each {|resource| resource.unload}
-      @related_files.each {|file| Kernel.load file.path if file.reloadable?}
+      @related_files.each {|file| file.load}
+    end
+    
+    # Load the file is possible, after loading any external
+    # dependencies for the component owning this file. The
+    # modified time is updated so we know if a change is made
+    # to the file at a later date. This does a simple load of
+    # the file and doesn't unload any resources beforehand.
+    # You typically want to use reload to ensure that the
+    # resources provided by this file are fully unloaded and
+    # reloaded in one go.
+    def load
+      @folder.component.load_external_dependencies
+      Kernel.load @path if reloadable?
       @modified_time = File.mtime(@path)
     end
     

@@ -2,9 +2,9 @@
 
 module Impromptu
   class Folder
+    attr_accessor :folder, :files, :component, :namespace
     DEFAULT_OPTIONS   = {nested_namespaces: true}
     SOURCE_EXTENSIONS = %w{rb so bundle}
-    attr_accessor :folder, :files
     
     # Register a new folder containing source files for a
     # component. Path is a Pathname object representing the
@@ -15,10 +15,12 @@ module Impromptu
     #   a folder called 'plugins' which has a file 'klass.rb'
     #   would define the resource Plugins::Klass. When false,
     #   the file would simply produce Klass.
-    def initialize(path, options={})
-      @folder   = path
-      @options  = DEFAULT_OPTIONS.merge(options)
-      @files    = OrderedSet.new
+    def initialize(path, component, options={}, block)
+      @folder     = path.realpath
+      @component  = component
+      @options    = DEFAULT_OPTIONS.merge(options)
+      @block      = block
+      @files      = OrderedSet.new
       @implicitly_load_all_files = true
     end
     
@@ -32,6 +34,12 @@ module Impromptu
     # in the same hash value.
     def hash
       @folder.hash
+    end
+    
+    # TODO: document
+    def evaluate_block
+      instance_eval @block unless @block.nil?
+      @block = nil # prevent the block from being run twice
     end
     
     # Explicitly include a file from this folder. If you use this

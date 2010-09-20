@@ -2,13 +2,14 @@ module Impromptu
   class Resource
     attr_reader :name, :files, :children, :parent, :reference
     
-    def initialize(name, parent)
+    def initialize(name, parent, component)
       @name         = name.to_sym
       @parent       = parent
       @base_symbol  = name.to_s.split('::').last.to_sym
       @files        = OrderedSet.new
       @children     = []
       @reference    = nil
+      @implicitly_defined = true
     end
     
     # Override eql? so two resources with the same name will be
@@ -31,7 +32,11 @@ module Impromptu
     # resource have been loaded. It is normally unecessary to call this
     # if you rely on the autoloader and reloader.
     def reload
-      @files.each {|file| file.reload}
+      if @implicitly_defined
+        # TODO: load blank module
+      else
+        @files.each {|file| file.reload}
+      end
     end
     
     # Unload the resource by undefining the constant representing it.
@@ -50,6 +55,7 @@ module Impromptu
     # of the resource will be incomplete until reload is called.
     def add_file(file)
       @files << file
+      @implicitly_defined = false
     end
     
     # Un-track a file implementing this resource. If the file was
@@ -58,6 +64,7 @@ module Impromptu
     # if it was previously loaded.
     def remove_file(file)
       @files.delete(file)
+      @implicitly_defined = true if @files.size == 0
     end
     
     # Unload and remove all references to this resource.
