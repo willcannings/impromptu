@@ -1,13 +1,17 @@
 module Impromptu
+  # Resources represent the modules or classes that are tracked by
+  # Impromptu and which can be lazy loaded. You should never create
+  # resources yourself - use component definitions to define folders
+  # of files which will implement resources.
   class Resource
-    attr_reader :name, :files, :children, :parent, :reference
+    attr_reader :name, :base_symbol, :files, :children, :parent
     
-    def initialize(name, parent, component)
+    def initialize(name, parent)
       @name         = name.to_sym
       @parent       = parent
-      @base_symbol  = name.to_s.split('::').last.to_sym
+      @base_symbol  = @name.base_symbol
       @files        = OrderedSet.new
-      @children     = []
+      @children     = {}
       @reference    = nil
       @implicitly_defined = true
     end
@@ -26,14 +30,24 @@ module Impromptu
       @name.hash
     end
     
+    # Attempts to retrieve a reference to the object represented by
+    # this resource. If the resource is unloaded, nil is returned.
+    def reference
+      return Object if root?
+      return nil unless @parent && @parent.reference
+      @reference ||= @parent.reference.const_get(@base_symbol)
+    end
+    
     # Reload the implementation of this resource from all files being
     # tracked for this resource. Call this method if you are manually
     # managing file tracking, and need to guarantee all files for this
     # resource have been loaded. It is normally unecessary to call this
     # if you rely on the autoloader and reloader.
     def reload
+      @parent.reload unless @parent.loaded?
       if @implicitly_defined
-        # TODO: load blank module
+        self.unload
+        Object.instance_eval "module #{@name}; end"
       else
         @files.each {|file| file.reload}
       end
@@ -45,7 +59,7 @@ module Impromptu
     def unload
       return unless loaded?
       @children.each {|child| child.unload}
-      parent.reference.send(:remove_const, @base_symbol)
+      @parent.reference.send(:remove_const, @base_symbol)
       @reference = nil
     end
     
@@ -67,9 +81,87 @@ module Impromptu
       @implicitly_defined = true if @files.size == 0
     end
     
+    # True if this resource is the parent of any resources.
+    def children?
+      !@children.empty?
+    end
+    
+    # Add a child resource to this resource. This does not load the
+    # resource. This should only be called by get_or_create_child.
+    def add_child(resource)
+      @children[resource.base_symbol] = resource
+    end
+    
+    # Remove a reference to a child resource. This does not unload
+    # the object, but is called automatically by unload on its parent
+    # resource.
+    def remove_child(resource)
+      @children.delete(resource.base_symbol)
+    end
+    
+    # In most instances, this method should only be called on the
+    # root resource to traverse the resource tree and retrieve or
+    # create the specified resource. Name must be a symbol.
+    def get_or_create_child(name)
+      return nil unless name.is_a?(Symbol)
+      current = self
+      
+      # iterate through the namespaced name, collecting previous names
+      name.nested_symbols.inject([]) do |previous_symbols, symbol|
+        # attempt to get the current resource, and add the current symbol
+        # to the list of seen symbols (used to construct namespaced names)
+        child_resource = current.child(symbol)
+        previous_symbols << symbol
+        
+        # create the resource if needed
+        if child_resource.nil?
+          name = previous_symbols.join('::').to_sym
+          child_resource = Resource.new(name, current)
+          current.add_child(child_resource)
+        end
+        
+        # the next current resource is the one we just created or retrieved
+        current = child_resource
+        previous_symbols
+      end
+      
+      # after iterating through the name, current will be the resulting resource
+      current
+    end
+    
+    # Walks the resource tree and returns the resource corresponding
+    # to name (which must be a symbol and can be namespaced). If the
+    # resource doesn't exist, nil is returned
+    def child(name)
+      return nil unless name.is_a?(Symbol)
+      return @children[name] if name.unnested?
+      
+      # if the name is nested, walk the resource tree to return the
+      # resource under this branch. rerturn nil if we reach a
+      # branch which doesn't exist
+      nested_symbols    = name.nested_symbols
+      top_level_symbol  = nested_symbols.first
+      further_symbols   = nested_symbols[1..-1].join('::').to_sym
+      return nil unless @children.has_key?(top_level_symbol)
+      @children[top_level_symbol].child(further_symbols)
+    end
+    
+    # Walks the resource tree to determine if the resource referred
+    # to by name (which must be a symbol, and may be namespaced) is
+    # known by Impromptu.
+    def child?(name)
+      !self.child(name).nil?
+    end
+    
     # Unload and remove all references to this resource.
     def remove
       # TODO: implement
+      @parent.remove_child(self) if @parent
+    end
+    
+    # True if this resource is the root resource referring to Object.
+    def root?
+      @parent.nil?
     end
     
     # True if this resource exists as a constant in its parent.
@@ -78,6 +170,7 @@ module Impromptu
     # may exist. If you rely on the autoloader and reloader this
     # will not occur.
     def loaded?
+      return true if root?
       return false unless parent && parent.reference
       parent.reference.constants.include?(@base_symbol)
     end

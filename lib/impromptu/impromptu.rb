@@ -1,4 +1,8 @@
 module Impromptu
+  def self.root_resource
+    @root_resource ||= Resource.new(:Object, nil)
+  end
+  
   def self.components
     @components ||= Hash.new {|hash, key| raise "Attempt to reference unknown component"}
   end

@@ -83,5 +83,9 @@ You can either define components using a block, or in separate configuration fil
 At the end of the block, Impromptu constructs the component tree and dependency graph, and you can reference the defined modules from this point.
 
 
+== Known Issues ==
+Reloading of resources is currently not guarded so if you have one thread reloading a resource, and another accessing it, the second thread may get a stale reference.
+
+
 == Thanks
 To Matt (http://twitter.com/mattrobs) for the name

@@ -1,6 +1,7 @@
 require 'pathname'
 require 'set'
 
+require 'impromptu/symbol'
 require 'impromptu/ordered_set'
 require 'impromptu/resource'
 require 'impromptu/file'
