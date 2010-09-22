@@ -81,6 +81,15 @@ module Impromptu
       @implicitly_defined = true if @files.size == 0
     end
     
+    # True if no files have been associated with this resource. In
+    # this case, loading the resource will be achieved by creating
+    # a blank module with the name of the resource. If any files
+    # have been associated, they will be loaded instead, and this
+    # method will return false.
+    def implicitly_defined?
+      @implicitly_defined
+    end
+    
     # True if this resource is the parent of any resources.
     def children?
       !@children.empty?

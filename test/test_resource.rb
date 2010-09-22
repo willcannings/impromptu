@@ -114,4 +114,63 @@ class TestResource < Test::Unit::TestCase
       end
     end
   end
+  
+  # ----------------------------------------
+  # Adding/removing references
+  # ----------------------------------------
+  context "A new blank resource" do
+    setup { @resource = Impromptu::Resource.new(:Object, nil) }
+    should "have no files" do
+      assert_equal 0, @resource.files.size
+    end
+    
+    should "have no children" do
+      assert_equal 0, @resource.children.size
+    end
+    
+    should "be implicitly defined" do
+      assert @resource.implicitly_defined?
+    end
+    
+    context "with an added child" do
+      setup do
+        @child = Impromptu::Resource.new(:Test, @resource)
+        @resource.add_child(@child)
+      end
+      
+      should "have an added child" do
+        assert_equal 1, @resource.children.size
+      end
+      
+      should "be able to remove the child" do
+        @resource.remove_child(@child)
+        assert_equal 0, @resource.children.size
+      end
+    end
+    
+    context "with an added file" do
+      setup do
+        @file = Impromptu::File.new(nil, nil, [:blank])
+        @resource.add_file(@file)
+      end
+      
+      should "have an added file" do
+        assert_equal 1, @resource.files.size
+      end
+      
+      should "not be implicitly defined" do
+        assert_equal false, @resource.implicitly_defined?
+      end
+      
+      should "be able to remove the file" do
+        @resource.remove_file(@file)
+        assert_equal 0, @resource.files.size
+      end
+      
+      should "be implicitly defined after all files are removed" do
+        @resource.remove_file(@file)
+        assert @resource.implicitly_defined?
+      end
+    end
+  end
 end
