@@ -13,10 +13,9 @@ module Impromptu
       @modified_time      = nil
       
       if provides.empty?
-        @resources << module_symbol_from_path
-      else
-        @resources.merge(provides)
-      end
+        provides = [module_symbol_from_path]
+      end      
+      provides.each {|resource_name| add_resource_definition(resource_name)}
     end
     
     # Override eql? so two files with the same path will be
@@ -145,8 +144,10 @@ module Impromptu
       end
     end
     
-    def add_resource_definition
-      # TODO
+    def add_resource_definition(resource_name)
+      resource = Impromptu.root_resource.get_or_create_child(resource_name)
+      resource.add_file(self)
+      @resources << resource
     end
     
     # True if the file has never been loaded before, or if the
@@ -160,14 +161,14 @@ module Impromptu
     
     private
       # Turn the path of this file into a module name. e.g:
-      # /folder/klass_one.rb => :KlassOne
+      # /root/plugin/klass_one.rb => Plugin::KlassOne
       def module_symbol_from_path
         # remove any directory names from the path, and the file extension
-        extension = File.extname(@path)
-        name = File.basename(@path)[0..-(extension.length + 1)]
+        extension = @path.extname
+        name = @path.relative_path_from(@folder).to_s[0..-(extension.length + 1)]
       
         # upcase the first character, and any characters following an underscore
-        name.gsub(/(?:^|_)(.)/) {|character| character.upcase}.to_sym
+        name.gsub(/\/(.?)/) {|character| "::#{character[1].upcase}" }.gsub(/(?:^|_)(.)/) {|character| character.upcase}.to_sym
       end
   end
 end

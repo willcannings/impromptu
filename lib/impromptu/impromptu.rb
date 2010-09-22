@@ -6,18 +6,6 @@ module Impromptu
   def self.components
     @components ||= Hash.new {|hash, key| raise "Attempt to reference unknown component"}
   end
-  
-  def self.resources
-    @resources ||= Hash.new {|hash, key| raise "Attempt to reference unknown resource"}
-  end
-  
-  def self.resource(symbol)
-    if resources.has_key?(symbol)
-      resources[symbol]
-    else
-      resources[symbol] = Resource
-    end
-  end
 
   # parse component definition files, or create components as
   # necessary directly from the supplied block  
