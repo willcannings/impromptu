@@ -3,6 +3,10 @@ require 'helper'
 class TestResource < Test::Unit::TestCase
   context "A symbol" do
     setup { @symbol = :ASymbolWhichDoesntNormallyExist }
+    
+    # ----------------------------------------
+    # API
+    # ----------------------------------------
     should "respond to nested?" do
       assert_respond_to @symbol, :nested?
     end
@@ -23,6 +27,13 @@ class TestResource < Test::Unit::TestCase
       assert_respond_to @symbol, :root_symbol
     end
     
+    should "respond to each_namespaced_symbol" do
+      assert_respond_to @symbol, :each_namespaced_symbol
+    end
+    
+    # ----------------------------------------
+    # Unnested symbol
+    # ----------------------------------------
     context "which isn't nested" do
       should "return false for nested?" do
         assert_equal false, @symbol.nested?
@@ -47,6 +58,9 @@ class TestResource < Test::Unit::TestCase
       end
     end
     
+    # ----------------------------------------
+    # Nested symbol
+    # ----------------------------------------
     context "which is nested" do
       setup { @symbol = :'TopLevel::BottomLevel' }
       should "return true for nested?" do
@@ -70,6 +84,15 @@ class TestResource < Test::Unit::TestCase
       
       should "return the last nested name for base_symbol" do
         assert_equal :BottomLevel, @symbol.base_symbol
+      end
+      
+      should "return consecutive namespaced symbols when calling each_namespaced_symbol" do
+        symbols = []
+        @symbol.each_namespaced_symbol do |symbol|
+          symbols << symbol
+        end
+        
+        assert_equal [:TopLevel, :'TopLevel::BottomLevel'], symbols
       end
     end
   end  

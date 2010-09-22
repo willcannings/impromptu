@@ -106,23 +106,18 @@ module Impromptu
       return nil unless name.is_a?(Symbol)
       current = self
       
-      # iterate through the namespaced name, collecting previous names
-      name.nested_symbols.inject([]) do |previous_symbols, symbol|
-        # attempt to get the current resource, and add the current symbol
-        # to the list of seen symbols (used to construct namespaced names)
-        child_resource = current.child(symbol)
-        previous_symbols << symbol
+      name.each_namespaced_symbol do |name|
+        # attempt to get the current resource
+        child_resource = current.child(name.base_symbol)
         
         # create the resource if needed
         if child_resource.nil?
-          name = previous_symbols.join('::').to_sym
           child_resource = Resource.new(name, current)
           current.add_child(child_resource)
         end
         
         # the next current resource is the one we just created or retrieved
         current = child_resource
-        previous_symbols
       end
       
       # after iterating through the name, current will be the resulting resource
