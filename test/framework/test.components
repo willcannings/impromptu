@@ -4,7 +4,7 @@ component 'framework' do
 	folder    'lib', nested_namespaces: false
 end
 
-component 'framework.extensions.blog' do
+component 'framework.extensions' do
 	namespace :Framework
-	folder    %w{extensions blog}, nested_namespaces: false
+	folder    'extensions'
 end

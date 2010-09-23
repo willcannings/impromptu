@@ -16,8 +16,8 @@ module Impromptu
   end
 
   def self.parse_file(path)
-    @base = Pathname.new(File.dirname(path))
-    File.open(path) do |file|
+    @base = Pathname.new(path).realpath.dirname
+    ::File.open(path) do |file|
       instance_eval file.read
     end
   end
