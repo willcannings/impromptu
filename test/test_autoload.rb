@@ -22,5 +22,11 @@ class TestAutload < Test::Unit::TestCase
         ::Namespace
       end
     end
+    
+    should "raise an appropriate exception when accessing a non existant resource" do
+      assert_raise NameError do
+        ::IDontExistSoRaiseAnException
+      end
+    end
   end
 end
