@@ -84,6 +84,11 @@ module Impromptu
     # Mark a component as 'frozen'. Modification of the component
     # requirements or folders are not allowed after this point.
     def freeze
+      @folders.each do |folder|
+        folder.files.each do |file|
+          file.freeze
+        end
+      end
       @frozen = true
     end
     

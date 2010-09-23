@@ -6,6 +6,16 @@ module Impromptu
   def self.components
     @components ||= Hash.new {|hash, key| raise "Attempt to reference unknown component"}
   end
+  
+  # Reset Impromptu by removing all known components and resources.
+  # This should rarely be used in a running application and mainly
+  # exists to allow the test framework to run the same setup code
+  # multiple times without changing stale components.
+  def self.reset
+    @root_resource = nil
+    @components = nil
+    @base = nil
+  end
 
   # parse component definition files, or create components as
   # necessary directly from the supplied block  
@@ -18,11 +28,7 @@ module Impromptu
     # now that we have a complete file/resource graph, freeze
     # the associations at this point (will be unfrozen for reloads)
     @components.each_value do |component|
-      component.folders.each do |folder|
-        folder.files.each do |file|
-          file.freeze
-        end
-      end
+      component.freeze
     end
   end
 
