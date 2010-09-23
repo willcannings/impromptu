@@ -1,4 +1,4 @@
 module Framework
-  class Klass
+  class Klass2
   end
 end
