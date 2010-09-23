@@ -55,7 +55,7 @@ module Impromptu
     def namespace(name=nil)
       unless name.nil?
         protect_from_modification
-        @namespace = name
+        @namespace = name.to_sym
       end
       @namespace
     end
@@ -84,11 +84,18 @@ module Impromptu
     # Mark a component as 'frozen'. Modification of the component
     # requirements or folders are not allowed after this point.
     def freeze
+      # freeze files
       @folders.each do |folder|
         folder.files.each do |file|
           file.freeze
         end
       end
+      
+      # create a blank namespace module if required
+      unless namespace.nil? || Impromptu.root_resource.child?(namespace)
+        Impromptu.root_resource.get_or_create_child(namespace)
+      end
+      
       @frozen = true
     end
     

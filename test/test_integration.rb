@@ -9,6 +9,9 @@ class TestIntegration < Test::Unit::TestCase
       end
     end
     
+    # ----------------------------------------
+    # Loading component definitions
+    # ----------------------------------------
     should "01 create two components" do
       assert_equal 2, Impromptu.components.size
     end
@@ -57,6 +60,9 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal true, Impromptu.root_resource.child(:'Framework').implicitly_defined?
     end
     
+    # ----------------------------------------
+    # Loading/unloading
+    # ----------------------------------------
     should "09 allow loading the implicitly defined framework module" do
       assert_equal false, Impromptu.root_resource.child(:'Framework').loaded?
       Impromptu.root_resource.child(:'Framework').reload
@@ -89,6 +95,34 @@ class TestIntegration < Test::Unit::TestCase
       assert_nothing_raised do
         Framework::Klass2
       end
+    end
+    
+    should "11 be able to unload implicit and explicit resources" do
+      # explicit
+      assert_equal true, Impromptu.root_resource.child(:'Framework::Extensions').loaded?
+      assert_equal true, Impromptu.root_resource.child(:'Framework::Extensions::Blog').loaded?
+      Impromptu.root_resource.child(:'Framework::Extensions').unload
+      assert_equal false, Impromptu.root_resource.child(:'Framework::Extensions').loaded?
+      assert_equal false, Impromptu.root_resource.child(:'Framework::Extensions::Blog').loaded?
+      
+      # implicit
+      assert_equal true, Impromptu.root_resource.child(:'Framework').loaded?
+      Impromptu.root_resource.child(:'Framework').unload
+      assert_equal false, Impromptu.root_resource.child(:'Framework').loaded?
+    end
+    
+    should "12 be able to reload previously unloaded resources" do
+      # implicit
+      assert_equal false, Impromptu.root_resource.child(:'Framework').loaded?
+      Impromptu.root_resource.child(:'Framework').reload
+      assert_equal true, Impromptu.root_resource.child(:'Framework').loaded?
+      
+      # explicit
+      assert_equal false, Impromptu.root_resource.child(:'Framework::Extensions').loaded?
+      assert_equal false, Impromptu.root_resource.child(:'Framework::Extensions::Blog').loaded?
+      Impromptu.root_resource.child(:'Framework::Extensions::Blog').reload
+      assert_equal true, Impromptu.root_resource.child(:'Framework::Extensions').loaded?
+      assert_equal true, Impromptu.root_resource.child(:'Framework::Extensions::Blog').loaded?
     end
   end
 end

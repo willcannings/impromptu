@@ -58,7 +58,7 @@ module Impromptu
     # unloaded. This allows the resource to be garbage collected.
     def unload
       return unless loaded?
-      @children.each {|child| child.unload}
+      @children.each_value {|child| child.unload}
       @parent.reference.send(:remove_const, @base_symbol)
       @reference = nil
     end
