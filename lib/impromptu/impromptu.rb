@@ -10,9 +10,20 @@ module Impromptu
   # parse component definition files, or create components as
   # necessary directly from the supplied block  
   def self.define_components(base=nil, &block)
+    # load the component definitions
     raise "No block supplied to define_components" unless block_given?
     @base = base || Pathname.new('.').realpath
     instance_eval &block
+    
+    # now that we have a complete file/resource graph, freeze
+    # the associations at this point (will be unfrozen for reloads)
+    @components.each_value do |component|
+      component.folders.each do |folder|
+        folder.files.each do |file|
+          file.freeze
+        end
+      end
+    end
   end
 
   def self.parse_file(path)
@@ -30,6 +41,6 @@ module Impromptu
       components[name] = component
     end
     component.instance_eval &block if block_given?
-    component.folders.each {|folder| folder.evaluate_block}
+    component.folders.each {|folder| folder.load}
   end  
 end

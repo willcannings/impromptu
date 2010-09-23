@@ -1,4 +1,4 @@
 module Framework
-  class Extension
+  module Extensions
   end
 end

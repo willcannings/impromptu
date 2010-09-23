@@ -11,11 +11,7 @@ module Impromptu
       @related_files      = Set.new
       @frozen             = false
       @modified_time      = nil
-      
-      if provides.empty?
-        provides = [module_symbol_from_path]
-      end      
-      provides.each {|resource_name| add_resource_definition(resource_name)}
+      @provides           = provides
     end
     
     # Override eql? so two files with the same path will be
@@ -39,7 +35,7 @@ module Impromptu
     # with any other files defining them, are also included.
     def freeze
       return if @frozen
-      remaining_resources = @provides.to_a
+      remaining_resources = @resources.to_a
       remaining_files = [self]
       
       while remaining_resources.size > 0 || remaining_files.size > 0
@@ -93,7 +89,7 @@ module Impromptu
     def load
       @folder.component.load_external_dependencies
       Kernel.load @path if reloadable?
-      @modified_time = File.mtime(@path)
+      @modified_time = @path.mtime
     end
     
     # Unload all of the resources provided by this file. This
@@ -144,10 +140,19 @@ module Impromptu
       end
     end
     
-    def add_resource_definition(resource_name)
-      resource = Impromptu.root_resource.get_or_create_child(resource_name)
-      resource.add_file(self)
-      @resources << resource
+    def add_resource_definition
+      # unless defined, we assume the name of the file implies
+      # the resource that is provided by the file
+      if @provides.empty?
+        @provides = [module_symbol_from_path]
+      end
+      
+      # add a reference of this file to every appropriate resource
+      @provides.each do |resource_name|
+        resource = Impromptu.root_resource.get_or_create_child(combine_symbol_with_namespace(resource_name))
+        resource.add_file(self)
+        @resources << resource
+      end
     end
     
     # True if the file has never been loaded before, or if the
@@ -165,10 +170,18 @@ module Impromptu
       def module_symbol_from_path
         # remove any directory names from the path, and the file extension
         extension = @path.extname
-        name = @path.relative_path_from(@folder).to_s[0..-(extension.length + 1)]
+        name = @folder.relative_path_to(@path).to_s[0..-(extension.length + 1)]
       
         # upcase the first character, and any characters following an underscore
         name.gsub(/\/(.?)/) {|character| "::#{character[1].upcase}" }.gsub(/(?:^|_)(.)/) {|character| character.upcase}.to_sym
+      end
+      
+      def combine_symbol_with_namespace(symbol)
+        if @folder.component.namespace
+          "#{@folder.component.namespace}::#{symbol}".to_sym
+        else
+          symbol.to_sym
+        end
       end
   end
 end

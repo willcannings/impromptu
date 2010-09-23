@@ -6,5 +6,5 @@ end
 
 component 'framework.extensions' do
 	namespace :Framework
-	folder    'extensions'
+	folder    'ext'
 end

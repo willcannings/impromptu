@@ -39,7 +39,7 @@ module Impromptu
     # folder 'src', nested_namespaces: false
     def folder(path, options={}, &block)
       protect_from_modification
-      folder = @folders << Folder.new(@base_path.join(*path), options, block)
+      folder = @folders << Folder.new(@base_path.join(*path), self, options, block)
     end
     
     # Define a namespace used for all resources provided by this

@@ -47,7 +47,7 @@ module Impromptu
       @parent.reload unless @parent.loaded?
       if @implicitly_defined
         self.unload
-        Object.instance_eval "module #{@name}; end"
+        Object.module_eval "module #{@name}; end"
       else
         @files.each {|file| file.reload}
       end
@@ -175,7 +175,7 @@ module Impromptu
     # will not occur.
     def loaded?
       return true if root?
-      return false unless parent && parent.reference
+      return false unless @parent && @parent.loaded? && @parent.reference
       parent.reference.constants.include?(@base_symbol)
     end
   end

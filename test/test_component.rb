@@ -62,7 +62,7 @@ class TestComponent < Test::Unit::TestCase
     # Folders
     # ----------------------------------------
     context "with a folder" do
-      setup { @component.folder('test', 'framework') }
+      setup { @component.folder(['test', 'framework']) }
       should "have one folder" do
         assert_equal 1, @component.folders.size
       end

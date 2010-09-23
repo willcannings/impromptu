@@ -37,9 +37,25 @@ module Impromptu
     end
     
     # TODO: document
-    def evaluate_block
-      instance_eval @block unless @block.nil?
+    def load
+      if @block.nil?
+        self.reload_file_set
+      else
+        instance_eval @block
+      end
       @block = nil # prevent the block from being run twice
+    end
+    
+    def nested_namespaces?
+      @options[:nested_namespaces]
+    end
+    
+    def relative_path_to(path)
+      if nested_namespaces?
+        path.relative_path_from(@folder)
+      else
+        path.basename
+      end
     end
     
     # Explicitly include a file from this folder. If you use this
@@ -95,7 +111,7 @@ module Impromptu
     
     private
       def source_file?(path)
-        path.file? && SOURCE_EXTENSIONS.include?(path.extname)
+        path.file? && SOURCE_EXTENSIONS.include?(path.extname[1..-1])
       end
   end
 end
