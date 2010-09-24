@@ -1,0 +1,2 @@
+class Load
+end

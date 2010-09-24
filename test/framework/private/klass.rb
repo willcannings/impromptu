@@ -1,10 +1,10 @@
 module Framework
   class Klass
-    def self.standard_method
+    def self.extension_method
     end
     
     def self.overriden_method
-      1
+      2
     end
   end
 end

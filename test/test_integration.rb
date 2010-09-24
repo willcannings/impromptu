@@ -64,7 +64,7 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal false, Impromptu.root_resource.child(:'ModTwo').loaded?
     end
     
-    should "08 have all resources specified by one file except klass, and the namespace specified by none" do
+    should "08 have all resources specified by the correct number of files" do
       assert_equal 0, Impromptu.root_resource.child(:'Framework').files.size
       assert_equal 1, Impromptu.root_resource.child(:'Framework::Extensions').files.size
       assert_equal 1, Impromptu.root_resource.child(:'Framework::Extensions::Blog').files.size
@@ -72,7 +72,7 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal 1, Impromptu.root_resource.child(:'Framework::Klass2').files.size
       assert_equal 1, Impromptu.root_resource.child(:'Framework::Klass2').files.size
       assert_equal 1, Impromptu.root_resource.child(:'Load').files.size
-      assert_equal 1, Impromptu.root_resource.child(:'OtherName').files.size
+      assert_equal 2, Impromptu.root_resource.child(:'OtherName').files.size
       assert_equal 1, Impromptu.root_resource.child(:'ModOne').files.size
       assert_equal 1, Impromptu.root_resource.child(:'ModTwo').files.size
       assert_equal true, Impromptu.root_resource.child(:'Framework').implicitly_defined?
@@ -103,6 +103,9 @@ class TestIntegration < Test::Unit::TestCase
       end
       
       # lib
+      assert_raise NameError do
+        CMath
+      end
       Impromptu.root_resource.child(:'Framework::Klass').reload
       Impromptu.root_resource.child(:'Framework::Klass2').reload
       assert_equal true, Impromptu.root_resource.child(:'Framework::Klass').loaded?
@@ -112,6 +115,9 @@ class TestIntegration < Test::Unit::TestCase
       end
       assert_nothing_raised do
         Framework::Klass2
+      end
+      assert_nothing_raised do
+        CMath
       end
       
       # other
@@ -138,11 +144,19 @@ class TestIntegration < Test::Unit::TestCase
     end
     
     should "11 load multiple files for a resource when required" do
+      # Klass
       Impromptu.root_resource.child(:'Framework::Klass').reload
       assert_respond_to Framework::Klass, :standard_method
-      assert_respond_to Framework::Klass, :overrided_method
+      assert_respond_to Framework::Klass, :overriden_method
       assert_respond_to Framework::Klass, :extension_method
-      assert_equal 2, Framework::Klass.overrided_method
+      assert_equal 2, Framework::Klass.overriden_method
+      
+      # OtherName
+      Impromptu.root_resource.child(:OtherName).reload
+      assert_respond_to OtherName, :one
+      assert_respond_to OtherName, :overriden_method
+      assert_respond_to OtherName, :two
+      assert_equal 4, OtherName.overriden_method
     end
     
     should "12 be able to unload implicit and explicit resources" do

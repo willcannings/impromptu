@@ -1,6 +1,6 @@
 component 'framework' do
 	namespace :Framework
-	requires  'matrix'
+	requires  'mathn'
 	folder    'lib', nested_namespaces: false
 end
 
@@ -13,7 +13,7 @@ component 'other' do
   folder 'other' do
     file 'load.rb'
     file 'also.rb', :provides => :OtherName
-    file 'two.rb', :provides => [:ModOne, :ModTwo]
+    file 'two.rb', :provides => [:ModOne, :ModTwo, :OtherName]
   end
 end
 
