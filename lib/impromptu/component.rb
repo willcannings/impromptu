@@ -19,6 +19,18 @@ module Impromptu
       @dependencies_loaded = false
     end
     
+    # Override eql? so two components with the same name will be
+    # considered equal by ordered set.
+    def eql?(other)
+      other.name == @name
+    end
+    
+    # Override hash so two components with the same name will result
+    # in the same hash value.
+    def hash
+      @name.hash
+    end
+    
     # Add external dependencies (such as gems) to this component. e.g:
     # requires 'gem_name', 'other_file'. May be called multiple times.
     def requires(*resources)

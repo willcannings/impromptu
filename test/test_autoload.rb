@@ -13,7 +13,7 @@ class TestAutload < Test::Unit::TestCase
     
     should "have a single component with a namespace" do
       assert_equal 1, Impromptu.components.size
-      assert_equal :Namespace, Impromptu.components.values.first.namespace
+      assert_equal :Namespace, Impromptu.components['test'].namespace
       assert_not_nil Impromptu.root_resource.child(:Namespace)
     end
     

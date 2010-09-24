@@ -3,6 +3,7 @@ require 'set'
 
 require 'impromptu/symbol'
 require 'impromptu/ordered_set'
+require 'impromptu/component_set'
 require 'impromptu/resource'
 require 'impromptu/file'
 require 'impromptu/folder'

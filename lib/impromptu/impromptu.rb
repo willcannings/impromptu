@@ -4,7 +4,20 @@ module Impromptu
   end
   
   def self.components
-    @components ||= Hash.new {|hash, key| raise "Attempt to reference unknown component"}
+    @components ||= ComponentSet.new
+  end
+  
+  # Call update to reload any folders (and associated files) which
+  # have been marked as reloadable. Any modified files will be
+  # reloaded, any new files will have their assiciated resources
+  # inserted in the resource tree, and any removed files will be
+  # unloaded.
+  def self.update
+    components.each do |component|
+      component.folders.each do |folder|
+        folder.reload if folder.reloadable?
+      end
+    end
   end
   
   # Reset Impromptu by removing all known components and resources.
@@ -35,7 +48,7 @@ module Impromptu
     
     # now that we have a complete file/resource graph, freeze
     # the associations at this point (will be unfrozen for reloads)
-    @components.each_value do |component|
+    components.each do |component|
       component.freeze
     end
   end
@@ -48,12 +61,7 @@ module Impromptu
   end
 
   def self.component(name, &block)
-    if components.has_key?(name)
-      component = components[name]
-    else
-      component = Component.new(@base, name)
-      components[name] = component
-    end
+    component = components << Component.new(@base, name)
     component.instance_eval &block if block_given?
     component.folders.each {|folder| folder.load}
   end  

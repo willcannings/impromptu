@@ -3,7 +3,7 @@
 module Impromptu
   class Folder
     attr_accessor :folder, :files, :component, :namespace
-    DEFAULT_OPTIONS   = {nested_namespaces: true}
+    DEFAULT_OPTIONS   = {nested_namespaces: true, reloadable: true}
     SOURCE_EXTENSIONS = %w{rb so bundle}
     
     # Register a new folder containing source files for a
@@ -15,6 +15,10 @@ module Impromptu
     #   a folder called 'plugins' which has a file 'klass.rb'
     #   would define the resource Plugins::Klass. When false,
     #   the file would simply produce Klass.
+    # * reloadable: true by default. If true, this folder
+    #   will be reloaded every time Impromptu.update is
+    #   called, and any modified files will be reloaded,
+    #   removed files unloaded, and new files tracked.
     def initialize(path, component, options={}, block)
       @folder     = path.realpath
       @component  = component
@@ -50,6 +54,10 @@ module Impromptu
       @options[:nested_namespaces]
     end
     
+    def reloadable?
+      @options[:reloadable]
+    end
+    
     def relative_path_to(path)
       if nested_namespaces?
         path.relative_path_from(@folder)
@@ -80,7 +88,7 @@ module Impromptu
     # reloaded, and removed files unloaded.
     def reload
       reload_file_set if @implicitly_load_all_files
-      @files.each {|file| file.reload}
+      @files.each {|file| file.reload_if_modified}
     end
     
     # Determine changes between the set of files this folder

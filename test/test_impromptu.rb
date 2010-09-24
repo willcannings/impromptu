@@ -30,8 +30,8 @@ class TestImpromptu < Test::Unit::TestCase
       assert_instance_of Impromptu::Resource, Impromptu.root_resource
     end
     
-    should "return a hash from components" do
-      assert_instance_of Hash, Impromptu.components
+    should "return a component set from components" do
+      assert_instance_of Impromptu::ComponentSet, Impromptu.components
     end
     
     should "rase an exception if a block is not supplied to define_components" do
