@@ -12,6 +12,14 @@ module Impromptu
   # exists to allow the test framework to run the same setup code
   # multiple times without changing stale components.
   def self.reset
+    # unload all resources
+    unless @root_resource.nil?
+      @root_resource.children.each_value do |resource|
+        resource.unload
+      end
+    end
+    
+    # reset lists to nil
     @root_resource = nil
     @components = nil
     @base = nil

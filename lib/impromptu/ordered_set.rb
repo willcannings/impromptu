@@ -31,7 +31,7 @@ module Impromptu
     end
 
     def to_a
-      @items_list
+      @items_list.dup
     end
     
     def each(&block)

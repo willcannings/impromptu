@@ -11,7 +11,7 @@ module Impromptu
       @related_files      = Set.new
       @frozen             = false
       @modified_time      = nil
-      @provides           = provides
+      @provides           = [provides].compact.flatten
     end
     
     # Override eql? so two files with the same path will be
@@ -144,7 +144,7 @@ module Impromptu
       # unless defined, we assume the name of the file implies
       # the resource that is provided by the file
       if @provides.empty?
-        @provides = [module_symbol_from_path]
+        @provides << module_symbol_from_path
       end
       
       # add a reference of this file to every appropriate resource
@@ -160,7 +160,7 @@ module Impromptu
     # as opposed to C extensions).
     def reloadable?
       return true if !loaded?
-      RELOADABLE_EXTENSIONS.include?(@path.extname)
+      RELOADABLE_EXTENSIONS.include?(@path.extname[1..-1])
     end
     
     
@@ -172,8 +172,11 @@ module Impromptu
         extension = @path.extname
         name = @folder.relative_path_to(@path).to_s[0..-(extension.length + 1)]
       
+        # convert any names following a slash to namespaces
+        name.gsub!(/\/(.?)/) {|character| "::#{character[1].upcase}" }
+        
         # upcase the first character, and any characters following an underscore
-        name.gsub(/\/(.?)/) {|character| "::#{character[1].upcase}" }.gsub(/(?:^|_)(.)/) {|character| character.upcase}.to_sym
+        name.gsub(/(?:^|_)(.)/) {|character| character.upcase}.to_sym
       end
       
       def combine_symbol_with_namespace(symbol)

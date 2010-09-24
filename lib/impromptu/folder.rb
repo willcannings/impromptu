@@ -41,9 +41,9 @@ module Impromptu
       if @block.nil?
         self.reload_file_set
       else
-        instance_eval @block
+        instance_eval &@block
+        @block = nil # prevent the block from being run twice
       end
-      @block = nil # prevent the block from being run twice
     end
     
     def nested_namespaces?
@@ -69,7 +69,8 @@ module Impromptu
     #   inidicating the name of the resource(s) provided by the file
     def file(name, options={})
       @implicitly_load_all_files = false
-      @files << Impromptu::File.new(@folder.join(*name).realpath, self, options[:provides])
+      file = Impromptu::File.new(@folder.join(*name).realpath, self, options[:provides])
+      @files.push(file).add_resource_definition
     end
     
     # Reload the files provided by this folder. If the folder

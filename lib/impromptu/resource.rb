@@ -49,7 +49,7 @@ module Impromptu
         self.unload
         Object.module_eval "module #{@name}; end"
       else
-        @files.each {|file| file.reload}
+        @files.first.reload
       end
     end
     
