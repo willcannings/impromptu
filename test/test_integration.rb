@@ -78,6 +78,7 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal true, Impromptu.root_resource.child(:'Framework').implicitly_defined?
     end
     
+    
     # ----------------------------------------
     # Loading/unloading
     # ----------------------------------------
@@ -192,5 +193,11 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal true, Impromptu.root_resource.child(:'Framework::Extensions').loaded?
       assert_equal true, Impromptu.root_resource.child(:'Framework::Extensions::Blog').loaded?
     end
+    
+    
+    # ----------------------------------------
+    # Updating files/folders
+    # ----------------------------------------
+    
   end
 end

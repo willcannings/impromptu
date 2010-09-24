@@ -14,7 +14,7 @@ module Impromptu
     #   instance, a folder with a root of 'src', containing
     #   a folder called 'plugins' which has a file 'klass.rb'
     #   would define the resource Plugins::Klass. When false,
-    #   the file would simply produce Klass.
+    #   the file would simply represent Klass.
     # * reloadable: true by default. If true, this folder
     #   will be reloaded every time Impromptu.update is
     #   called, and any modified files will be reloaded,
