@@ -79,7 +79,7 @@ module Impromptu
     # if it was previously loaded.
     def remove_file(file)
       @files.delete(file)
-      @implicitly_defined = true if @files.size == 0
+      @implicitly_defined = true if @files.size == 0 && namespace?
     end
     
     # True if no files have been associated with this resource. In

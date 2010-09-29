@@ -116,9 +116,6 @@ class TestIntegration < Test::Unit::TestCase
       end
       
       # lib
-      assert_raise NameError do
-        CMath
-      end
       Impromptu.root_resource.child(:'Framework::Klass').reload
       Impromptu.root_resource.child(:'Framework::Klass2').reload
       assert_equal true, Impromptu.root_resource.child(:'Framework::Klass').loaded?
@@ -128,9 +125,6 @@ class TestIntegration < Test::Unit::TestCase
       end
       assert_nothing_raised do
         Framework::Klass2
-      end
-      assert_nothing_raised do
-        CMath
       end
       
       # other
@@ -210,6 +204,33 @@ class TestIntegration < Test::Unit::TestCase
     # ----------------------------------------
     # Updating files/folders
     # ----------------------------------------
+    context "15 and changing the definition of klass" do
+      setup do
+        Impromptu.root_resource.child(:'Framework::Klass').reload
+        new_klass = File.open('test/framework/copies/new_klass.rb').read
+        File.open('test/framework/lib/klass.rb', 'w') do |file|
+          file.write new_klass
+        end
+      end
+      
+      teardown do
+        old_klass = File.open('test/framework/copies/original_klass.rb').read
+        File.open('test/framework/lib/klass.rb', 'w') do |file|
+          file.write old_klass
+        end
+      end
+      
+      should "15 reload a class definition correctly when a file is changed" do        
+        # update impromptu and test the new klass is loaded
+        assert_respond_to Framework::Klass, :standard_method
+        assert_equal 2, Framework::Klass.overriden_method
+        Impromptu.update
+        assert_respond_to Framework::Klass, :new_method
+        assert_equal false, Framework::Klass.respond_to?(:standard_method)
+        assert_equal 2, Framework::Klass.overriden_method
+      end
+    end
+    
     
   end
 end

@@ -107,7 +107,7 @@ module Impromptu
     # the file when we last loaded it.
     def modified?
       return true if @modified_time.nil?
-      File.mtime(@path) > @modified_time
+      @path.mtime > @modified_time
     end
     
     # Reloads the associated resources only if the underlying

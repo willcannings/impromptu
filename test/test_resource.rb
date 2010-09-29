@@ -171,9 +171,15 @@ class TestResource < Test::Unit::TestCase
         assert_equal 0, @resource.files.size
       end
       
-      should "be implicitly defined after all files are removed" do
+      should "not be implicitly defined after all files are removed" do
         @resource.remove_file(@file)
-        assert @resource.implicitly_defined?
+        assert_equal false, @resource.implicitly_defined?
+      end
+      
+      should "be implicitly defined after all files are removed if it is a namespace" do
+        @resource.namespace!
+        @resource.remove_file(@file)
+        assert_equal true, @resource.implicitly_defined?
       end
     end
   end
