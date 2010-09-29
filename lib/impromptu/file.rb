@@ -106,8 +106,7 @@ module Impromptu
     # underlying file is greater than the modified_time of
     # the file when we last loaded it.
     def modified?
-      return true if @modified_time.nil?
-      @path.mtime > @modified_time
+      loaded? && @path.mtime > @modified_time
     end
     
     # Reloads the associated resources only if the underlying
