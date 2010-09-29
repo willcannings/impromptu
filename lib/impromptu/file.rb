@@ -60,9 +60,15 @@ module Impromptu
     # Unfreeze this file by clearing the related files and
     # resources lists.
     def unfreeze
-      @related_resources = nil
-      @related_files = nil
+      @related_resources = Set.new
+      @related_files = Set.new
       @frozen = false
+    end
+    
+    # Unfreeze and freeze a files association lists
+    def refreeze
+      unfreeze
+      freeze
     end
     
     # Load (or reload) all of the resources provided by this

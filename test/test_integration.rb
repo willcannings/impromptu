@@ -202,9 +202,9 @@ class TestIntegration < Test::Unit::TestCase
     
     
     # ----------------------------------------
-    # Updating files/folders
+    # Updating files
     # ----------------------------------------
-    context "15 and changing the definition of klass" do
+    context "and changing the definition of klass" do
       setup do
         Impromptu.root_resource.child(:'Framework::Klass').reload
         new_klass = File.open('test/framework/copies/new_klass.rb').read
@@ -220,7 +220,7 @@ class TestIntegration < Test::Unit::TestCase
         end
       end
       
-      should "15 reload a class definition correctly when a file is changed" do        
+      should "reload a class definition correctly when a file is changed" do        
         # update impromptu and test the new klass is loaded
         assert_respond_to Framework::Klass, :standard_method
         assert_equal 2, Framework::Klass.overriden_method
@@ -232,5 +232,30 @@ class TestIntegration < Test::Unit::TestCase
     end
     
     
+    # ----------------------------------------
+    # Adding files
+    # ----------------------------------------
+    context "and adding a new file to a reloadable folder" do
+      setup do
+        FileUtils.mv 'test/framework/copies/new_unseen.rb', 'test/framework/private/unseen.rb'
+      end
+      
+      teardown do
+        FileUtils.mv 'test/framework/private/unseen.rb', 'test/framework/copies/new_unseen.rb'
+      end
+      
+      should "make the resource from the new file available for loading" do
+        assert_equal false, Impromptu.root_resource.child?(:'Framework::Unseen')
+        Impromptu.update
+        assert_equal true, Impromptu.root_resource.child?(:'Framework::Unseen')
+        Impromptu.root_resource.child(:'Framework::Unseen').reload
+        assert Framework::Unseen.test_method
+      end
+    end
+    
+    
+    # ----------------------------------------
+    # Removing files
+    # ----------------------------------------
   end
 end

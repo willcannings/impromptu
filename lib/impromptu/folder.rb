@@ -101,6 +101,7 @@ module Impromptu
       return unless @implicitly_load_all_files
       old_file_set = @files.to_a
       new_file_set = []
+      changes = false
       
       # find all current files and add them if necessary
       @folder.find do |path|
@@ -108,13 +109,23 @@ module Impromptu
         file = Impromptu::File.new(path.realpath, self)
         new_file_set << file
         unless @files.include?(file)
+          changes = true
           @files.push(file).add_resource_definition
         end
       end
-      
+
       # remove any files which have been deleted
       deleted_files = old_file_set - new_file_set
       deleted_files.each {|file| @files.delete(file).remove}
+      changes = true if deleted_files.size > 0
+      
+      # refreeze each files association lists if the set of
+      # files has changed
+      if changes
+        @files.each do |file|
+          file.refreeze
+        end
+      end
     end
     
     
