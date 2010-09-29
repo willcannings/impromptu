@@ -29,6 +29,10 @@ class TestResource < Test::Unit::TestCase
       assert_respond_to Impromptu.root_resource, :get_or_create_child
     end
     
+    should "respond to namespace?" do
+      assert_respond_to Impromptu.root_resource, :namespace?
+    end
+    
     should "be a root resource" do
       assert Impromptu.root_resource.root?
     end

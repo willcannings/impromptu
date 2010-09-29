@@ -13,6 +13,7 @@ module Impromptu
       @files        = OrderedSet.new
       @children     = {}
       @reference    = nil
+      @namespace    = false
       @implicitly_defined = true
     end
     
@@ -88,6 +89,18 @@ module Impromptu
     # method will return false.
     def implicitly_defined?
       @implicitly_defined
+    end
+    
+    # True if this resource represents a module acting as a
+    # namespace.
+    def namespace?
+      @namespace
+    end
+    
+    # Mark a resource as representing a module acting as a
+    # namespace.
+    def namespace!
+      @namespace = true
     end
     
     # True if this resource is the parent of any resources.

@@ -52,7 +52,19 @@ class TestIntegration < Test::Unit::TestCase
       assert Impromptu.root_resource.child?(:ModTwo)
     end
     
-    should "07 keep all resources unloaded to start with" do
+    should "07 correctly mark namespace resources" do
+      assert_equal true,  Impromptu.root_resource.child(:Framework).namespace?
+      assert_equal false, Impromptu.root_resource.child(:Framework).child(:Extensions).namespace?
+      assert_equal false, Impromptu.root_resource.child(:Framework).child(:Extensions).child(:Blog).namespace?
+      assert_equal false, Impromptu.root_resource.child(:Framework).child(:Klass).namespace?
+      assert_equal false, Impromptu.root_resource.child(:Framework).child(:Klass2).namespace?
+      assert_equal false, Impromptu.root_resource.child(:Load).namespace?
+      assert_equal false, Impromptu.root_resource.child(:OtherName).namespace?
+      assert_equal false, Impromptu.root_resource.child(:ModOne).namespace?
+      assert_equal false, Impromptu.root_resource.child(:ModTwo).namespace?
+    end
+    
+    should "08 keep all resources unloaded to start with" do
       assert_equal false, Impromptu.root_resource.child(:'Framework').loaded?
       assert_equal false, Impromptu.root_resource.child(:'Framework::Extensions').loaded?
       assert_equal false, Impromptu.root_resource.child(:'Framework::Extensions::Blog').loaded?
@@ -64,7 +76,7 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal false, Impromptu.root_resource.child(:'ModTwo').loaded?
     end
     
-    should "08 have all resources specified by the correct number of files" do
+    should "09 have all resources specified by the correct number of files" do
       assert_equal 0, Impromptu.root_resource.child(:'Framework').files.size
       assert_equal 1, Impromptu.root_resource.child(:'Framework::Extensions').files.size
       assert_equal 1, Impromptu.root_resource.child(:'Framework::Extensions::Blog').files.size
@@ -82,7 +94,7 @@ class TestIntegration < Test::Unit::TestCase
     # ----------------------------------------
     # Loading/unloading
     # ----------------------------------------
-    should "09 allow loading the implicitly defined framework module" do
+    should "10 allow loading the implicitly defined framework module" do
       assert_equal false, Impromptu.root_resource.child(:'Framework').loaded?
       Impromptu.root_resource.child(:'Framework').reload
       assert_equal true, Impromptu.root_resource.child(:'Framework').loaded?
@@ -91,7 +103,7 @@ class TestIntegration < Test::Unit::TestCase
       end
     end
     
-    should "10 load resources using associated files when required" do
+    should "11 load resources using associated files when required" do
       # ext
       Impromptu.root_resource.child(:'Framework::Extensions::Blog').reload
       assert_equal true, Impromptu.root_resource.child(:'Framework::Extensions').loaded?
@@ -144,7 +156,7 @@ class TestIntegration < Test::Unit::TestCase
       end
     end
     
-    should "11 load multiple files for a resource when required" do
+    should "12 load multiple files for a resource when required" do
       # Klass
       Impromptu.root_resource.child(:'Framework::Klass').reload
       assert_respond_to Framework::Klass, :standard_method
@@ -160,7 +172,7 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal 4, OtherName.overriden_method
     end
     
-    should "12 be able to unload implicit and explicit resources" do
+    should "13 be able to unload implicit and explicit resources" do
       # explicit
       Impromptu.root_resource.child(:'Framework::Extensions::Blog').reload
       assert_equal true, Impromptu.root_resource.child(:'Framework::Extensions').loaded?
@@ -176,7 +188,7 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal false, Impromptu.root_resource.child(:'Framework').loaded?
     end
     
-    should "13 be able to reload previously unloaded resources" do
+    should "14 be able to reload previously unloaded resources" do
       # implicit
       Impromptu.root_resource.child(:'Framework').reload
       Impromptu.root_resource.child(:'Framework').unload
