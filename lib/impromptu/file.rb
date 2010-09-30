@@ -48,6 +48,7 @@ module Impromptu
         
         if file = remaining_files.shift
           @related_files << file
+          file.related_files << self
           file.resources.each do |resource|
             remaining_resources << resource unless @related_resources.include?(resource)
           end
