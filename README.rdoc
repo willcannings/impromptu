@@ -9,37 +9,37 @@ Impromptu allows you to define components of a system, the gem/external requirem
 
 A simple component DSL is used to define components:
 
-	component 'framework' do
-		namespace :Framework
-		requires  'rack'
-		folder    'lib', nested_namespaces: false
-	end
+  component 'framework' do
+    namespace :Framework
+    requires  'rack'
+    folder    'lib', nested_namespaces: false
+  end
 
-	component 'private' do
-	  namespace :Framework
-	  folder 'private'
-	end
+  component 'private' do
+    namespace :Framework
+    folder 'private'
+  end
 
-	component 'other' do
-	  folder 'other' do
-	    file 'load.rb'
-	    file 'mods.rb', :provides => [:ModOne, :ModTwo]
-	  end
-	end
+  component 'other' do
+    folder 'other' do
+      file 'load.rb'
+      file 'mods.rb', :provides => [:ModOne, :ModTwo]
+    end
+  end
 
 
 Components may have a namespace, may have requirements, and must have at least one folder containing source files that implement the resources provided by the component.  Imagine the 'lib' folder used by the 'framework' component contained the files:
 
-	[lib]
-		\ klass.rb
-		\ [group]
-				\ klass2.rb
+  [lib]
+    \ klass.rb
+    \ [group]
+        \ klass2.rb
 
 These files would provide the resources Framework::Klass, and Framework::Klass2. If the 'nested_namespaces' flag was true, klass2.rb would instead provide Framework::Group::Klass2. When either of these resources are requested anywhere, Impromptu first loads the requirements of the component (in this case rack) before loading any files implementing the requested resource. Sometimes, a resource is defined by more than one file. Imagine the 'private' folder contained:
 
-	[private]
-		\ klass.rb
-		\ klass2.rb
+  [private]
+    \ klass.rb
+    \ klass2.rb
 
 Because the 'private' component shares the same namespace as the 'framework' component, these two files would also provide Framework::Klass and Framework::Klass2. Referencing Klass or Klass2 would load the file from 'lib' first before the file from 'private' (since the 'private' component appears after the 'framework' component).
 
@@ -50,22 +50,22 @@ Just as a resource may be implemented by multiple files, a file may implement mu
 == Defining Components
 Before any resources from a component can be loaded, you must define the components of your system in a block provided to define_components. There are two options: you can either define components directly in this block, or you can call the 'parse_file' method to load a file which defines the components instead.
 
-	Impromptu.define_components do
-		# direct
-		component do
-			...
-		end
-		
-		# from a file
-		parse_file 'framework/framework.components'
-	end
+  Impromptu.define_components do
+    # direct
+    component do
+      ...
+    end
+    
+    # from a file
+    parse_file 'framework/framework.components'
+  end
 
 The present working directory, or the directory containing a file being parsed, is used as the current 'base' directory. Folder references are assumed to be relative to this directory, unless they are an absolute path. Once the set of components is defined it cannot be changed. The list of folders implementing a component also cannot be changed, although the files within a folder may be changed and reloaded. These restrictions may be lifted in a later release.
 
 == Reloading Components
 Impromptu supports the reloading of resource implementation files, including adding new files to a folder and removing existing files. By default folders are assumed to be reloadable, though setting the reloadable option to false prevents folders being scanned during an update:
 
-	folder 'lib', :reloadable => false
+  folder 'lib', :reloadable => false
 
 To force a reload of already loaded resources, and an update of the resource tree, call Impromptu.update. Only resources which have their files changed and have previously been loaded will be reloaded. Any new files will either insert their resources in to the resource tree or add themselves to the list of files implementing an existing resource. Removing a file may simply remove it from the list of files implementing a resource, or it may unload and remove the resource entirely (if it was the only or last file implementing a resource). Any folders which were defined using a block and subsequent calls to 'file' will not be scanned for new or missing files since their file list is explicitly defined. Only files with a reloadable extension (currently 'rb') will be reloaded if they are changed - object files such as bundles and shared objects can only be loaded once.
 
