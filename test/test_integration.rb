@@ -257,5 +257,27 @@ class TestIntegration < Test::Unit::TestCase
     # ----------------------------------------
     # Removing files
     # ----------------------------------------
+    context "and removing a file from a reloadable folder" do
+      teardown do
+        FileUtils.mv 'test/framework/copies/klass2.rb', 'test/framework/lib/group/klass2.rb'
+      end
+      
+      should "make the resource from the old unavailable since its definition has been removed" do
+        # ensure the resource exists and load it
+        assert_equal true, Impromptu.root_resource.child?(:'Framework::Klass2')
+        Impromptu.root_resource.child(:'Framework::Klass2').reload
+        assert_nothing_raised do
+          Framework::Klass2
+        end
+        
+        # update and see the missing file
+        FileUtils.mv 'test/framework/lib/group/klass2.rb', 'test/framework/copies/klass2.rb'
+        Impromptu.update
+        assert_equal false, Impromptu.root_resource.child?(:'Framework::Klass2')
+        assert_raise NameError do
+          Framework::Klass2
+        end
+      end
+    end
   end
 end

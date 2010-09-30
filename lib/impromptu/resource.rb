@@ -172,7 +172,7 @@ module Impromptu
     
     # Unload and remove all references to this resource.
     def remove
-      # TODO: implement
+      unload
       @parent.remove_child(self) if @parent
     end
     

@@ -48,7 +48,7 @@ module Impromptu
         
         if file = remaining_files.shift
           @related_files << file
-          file.related_files << self
+          file.add_related_file(self)
           file.resources.each do |resource|
             remaining_resources << resource unless @related_resources.include?(resource)
           end
@@ -127,6 +127,11 @@ module Impromptu
       !@modified_time.nil?
     end
     
+    # Add a file to the list of files related to this file.
+    def add_related_file(file)
+      @related_files << file
+    end
+    
     # Remove a file from the list of files related to this file.
     def remove_related_file(file)
       @related_files.delete(file)
@@ -138,7 +143,7 @@ module Impromptu
     def remove
       @related_files.each {|file| file.remove_related_file(self)}
       @resources.each do |resource|
-        if resource.files.length == 1
+        if resource.files.size == 1
           resource.remove
         else
           resource.remove_file(self)
