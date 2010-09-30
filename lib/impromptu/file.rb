@@ -11,6 +11,7 @@ module Impromptu
       @related_files      = Set.new
       @frozen             = false
       @modified_time      = nil
+      @dirty              = true
       @provides           = [provides].compact.flatten
     end
     
@@ -80,7 +81,6 @@ module Impromptu
     # dependencies between files and resources can cause large
     # subsections of the component graph to be reloaded together.
     def reload
-      # TODO: how to handle C extensions? we can reload a source extension, but not C?
       @related_resources.each {|resource| resource.unload}
       @related_files.each {|file| file.load}
     end
@@ -97,6 +97,7 @@ module Impromptu
       @folder.component.load_external_dependencies
       Kernel.load @path if reloadable?
       @modified_time = @path.mtime
+      @dirty = false
     end
     
     # Unload all of the resources provided by this file. This
@@ -107,13 +108,14 @@ module Impromptu
     def unload
       resources.each {|resource| resource.unload}
       @modified_time = nil
+      @dirty = true
     end
     
     # Returns true if the current modification time of the
     # underlying file is greater than the modified_time of
     # the file when we last loaded it.
     def modified?
-      loaded? && @path.mtime > @modified_time
+      resources_loaded? && (@dirty || @modified_time.nil? || (@path.mtime > @modified_time))
     end
     
     # Reloads the associated resources only if the underlying
@@ -127,14 +129,25 @@ module Impromptu
       !@modified_time.nil?
     end
     
+    # True if any of the resources provided by this file have
+    # been loaded.
+    def resources_loaded?
+      @resources.each do |resource|
+        return true if resource.loaded?
+      end
+      false
+    end
+    
     # Add a file to the list of files related to this file.
     def add_related_file(file)
       @related_files << file
+      @dirty = true
     end
     
     # Remove a file from the list of files related to this file.
     def remove_related_file(file)
       @related_files.delete(file)
+      @dirty = true
     end
     
     # Delete references to this file from any resources or other

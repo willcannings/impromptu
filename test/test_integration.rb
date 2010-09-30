@@ -279,5 +279,34 @@ class TestIntegration < Test::Unit::TestCase
         end
       end
     end
+    
+    
+    # ----------------------------------------
+    # Adding a file to a previously defined
+    # resource
+    # ----------------------------------------
+    context "and adding a file to a previously defined resource" do
+      setup do
+        Impromptu.root_resource.child(:'Framework::Klass2').reload
+        FileUtils.mv 'test/framework/copies/extra_klass2.rb', 'test/framework/private/klass2.rb'
+      end
+      
+      teardown do
+        FileUtils.mv 'test/framework/private/klass2.rb', 'test/framework/copies/extra_klass2.rb'
+      end
+      
+      should "extend the definition and the list of files implementing the resource" do
+        # existing definition
+        assert Impromptu.root_resource.child?(:'Framework::Klass2')
+        assert_equal 1, Impromptu.root_resource.child(:'Framework::Klass2').files.size
+        assert_equal false, Framework::Klass2.respond_to?(:new_method)
+        
+        # extend with new definition
+        Impromptu.update
+        assert_equal 2, Impromptu.root_resource.child(:'Framework::Klass2').files.size
+        assert Framework::Klass2.respond_to?(:new_method)
+        assert Framework::Klass2.new_method
+      end
+    end
   end
 end
