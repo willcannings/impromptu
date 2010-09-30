@@ -151,6 +151,12 @@ module Impromptu
       end
     end
     
+    # Should only be called once, and only after a file has been
+    # loaded for the first time. If the file was defined with
+    # a list of resources the file implements, inform each resource
+    # that this file implements the resource. Otherwise the name
+    # of the file is used to determine the resource provided (e.g
+    # klass_one.rb would be assumed to provide KlassOne).
     def add_resource_definition
       # unless defined, we assume the name of the file implies
       # the resource that is provided by the file

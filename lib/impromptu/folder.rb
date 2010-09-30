@@ -40,7 +40,11 @@ module Impromptu
       @folder.hash
     end
     
-    # TODO: document
+    # Load a folders definition and files after the set of components
+    # has been defined. For folders provided a block, the block is
+    # run in the context of this folder (allowing 'file' to be called).
+    # Otherwise the folder is scanned to produce an initial set of files
+    # and resources provided by this folder.
     def load
       if @block.nil?
         self.reload_file_set
@@ -50,14 +54,24 @@ module Impromptu
       end
     end
     
+    # True if the folder uses nested namespaces
     def nested_namespaces?
       @options[:nested_namespaces]
     end
     
+    # True if the folder is reloadable
     def reloadable?
       @options[:reloadable]
     end
     
+    # Return the 'base' folder for a file contained within this
+    # folder. For instance, a folder with nested namespaces would
+    # return the path to a file from the root folder. Without
+    # namespaces, the relative path to a file would be the enclosing
+    # folder of the file. i.e relative path to framework/a/b.rb (where
+    # framework is the root folder) would return 'a/b.rb' for a
+    # nested namespace folder, or just 'b.rb' for a non nested
+    # namespace folder.
     def relative_path_to(path)
       if nested_namespaces?
         path.relative_path_from(@folder)
@@ -130,6 +144,8 @@ module Impromptu
     
     
     private
+      # True if the path represents a file with an extension known to
+      # implement resources.
       def source_file?(path)
         path.file? && SOURCE_EXTENSIONS.include?(path.extname[1..-1])
       end

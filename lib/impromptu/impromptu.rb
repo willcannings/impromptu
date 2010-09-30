@@ -1,8 +1,12 @@
 module Impromptu
+  # Resources are represented in a tree, with the root_resource
+  # representing the Object object. All resources are children
+  # of this resource.
   def self.root_resource
     @root_resource ||= Resource.new(:Object, nil)
   end
   
+  # The set of components known to Impromptu
   def self.components
     @components ||= ComponentSet.new
   end
@@ -38,8 +42,10 @@ module Impromptu
     @base = nil
   end
 
-  # parse component definition files, or create components as
-  # necessary directly from the supplied block  
+  # Parse component definition files, or create components as
+  # necessary directly from the supplied block. The block is run
+  # in the context of the Impromptu module allowing you to call
+  # 'component' directly without reference to Impromptu.
   def self.define_components(base=nil, &block)
     # load the component definitions
     raise "No block supplied to define_components" unless block_given?
@@ -53,6 +59,9 @@ module Impromptu
     end
   end
 
+  # Open and run a file defining components. The folder containing
+  # the file is used as the 'base' folder, and folder references
+  # within components are assumed to be relative to this base.
   def self.parse_file(path)
     @base = Pathname.new(path).realpath.dirname
     ::File.open(path) do |file|
@@ -60,6 +69,10 @@ module Impromptu
     end
   end
 
+  # Define and create a new component. The name of the component
+  # must be unique (otherwise you will get a reference to the
+  # existing component), and the block supplied is run in the context
+  # of the newly created component.
   def self.component(name, &block)
     component = components << Component.new(@base, name)
     component.instance_eval &block if block_given?
