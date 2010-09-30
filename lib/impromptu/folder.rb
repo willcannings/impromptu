@@ -1,5 +1,3 @@
-# TODO: protect_from_modification as in component
-
 module Impromptu
   class Folder
     attr_accessor :folder, :files, :component, :namespace
