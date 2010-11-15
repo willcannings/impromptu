@@ -7,4 +7,9 @@ module Framework
       2
     end
   end
+  
+  module SubComponent
+    module Leaf
+    end
+  end
 end

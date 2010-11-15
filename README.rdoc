@@ -23,7 +23,7 @@ A simple component DSL is used to define components:
   component 'other' do
     folder 'other' do
       file 'load.rb'
-      file 'mods.rb', :provides => [:ModOne, :ModTwo]
+      file 'mods.rb', provides: [:ModOne, :ModTwo]
     end
   end
 
