@@ -52,6 +52,7 @@ module Impromptu
       else
         @files.first.reload
       end
+      self.reference.extend(Impromptu::Autoload)
     end
     
     # Unload the resource by undefining the constant representing it.
@@ -151,7 +152,7 @@ module Impromptu
     # resource doesn't exist, nil is returned
     def child(name)
       return nil unless name.is_a?(Symbol)
-      return @children[name] if name.unnested?
+      return @children[name.without_leading_colons.to_sym] if name.unnested?
       
       # if the name is nested, walk the resource tree to return the
       # resource under this branch. rerturn nil if we reach a

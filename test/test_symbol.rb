@@ -95,5 +95,33 @@ class TestResource < Test::Unit::TestCase
         assert_equal [:TopLevel, :'TopLevel::BottomLevel'], symbols
       end
     end
+    
+    # ----------------------------------------
+    # Prefixed Symbol
+    # ----------------------------------------
+    context "which is prefixed" do
+      setup { @symbol = :'::A' }
+      should "return false for nested?" do
+        assert_equal false, @symbol.nested?
+      end
+      
+      should "return true for unnested?" do
+        assert_equal true, @symbol.unnested?
+      end
+      
+      should "return a single symbol from nested_symbols" do
+        assert_instance_of Array, @symbol.nested_symbols
+        assert_equal 1, @symbol.nested_symbols.size
+        assert_instance_of Symbol, @symbol.nested_symbols[0]
+      end
+      
+      should "return itself for base_symbol" do
+        assert_equal :A, @symbol.base_symbol
+      end
+      
+      should "return itself for root_symbol" do
+        assert_equal :A, @symbol.root_symbol
+      end
+    end
   end  
 end

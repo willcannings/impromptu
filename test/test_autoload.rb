@@ -36,7 +36,9 @@ class TestAutload < Test::Unit::TestCase
       Impromptu.define_components do
         component 'framework' do
           namespace :Framework
-          folder 'test/framework/private'
+          folder 'test/framework/private' do
+            file 'klass.rb', :provides => [:Klass, :SubComponent, :'Subcomponent::Leaf']
+          end
         end
       end
     end

@@ -4,7 +4,7 @@ class Symbol
   # True if this symbol contains namespaces (is a nested
   # symbol such as A::B).
   def nested?
-    self.to_s.include? '::'
+    self.without_leading_colons.include? '::'
   end
   
   # True if this symbol contains no namespaces (is a root
@@ -16,7 +16,7 @@ class Symbol
   # Split a symbol into its component names (A::B =>
   # [:A, :B])
   def nested_symbols
-    self.to_s.split('::').collect(&:to_sym)
+    self.without_leading_colons.split('::').collect(&:to_sym)
   end
   
   # Retrieve the base (end or final) symbol name from this
@@ -38,6 +38,19 @@ class Symbol
       name << symbol
       yield name.join('::').to_sym
       name
+    end
+  end
+  
+  # Strip leading colons from a symbol name. Two leading
+  # colons indicate a symbol is relative to the root
+  # namespace (Object) but should be removed when determining
+  # nesting and nested symbols.
+  def without_leading_colons
+    str = self.to_s
+    if str.start_with?('::')
+      str[2..-1]
+    else
+      str
     end
   end
 end

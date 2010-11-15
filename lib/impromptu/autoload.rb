@@ -10,9 +10,17 @@ module Impromptu
     # to it. If it is, then something very screwy has gone on and Ruby
     # cannot locate an already loaded resource.
     def const_missing(symbol)
+      # namespace the missing resource with the name of the
+      # current class or module
+      if self == Object
+        namespaced_symbol = symbol
+      else
+        namespaced_symbol = "#{self.name}::#{symbol}".to_sym
+      end
+      
       # walk the resource tree and get a reference to the
       # resource or nil if we're not tracking it
-      resource = Impromptu.root_resource.child(symbol)
+      resource = Impromptu.root_resource.child(namespaced_symbol)
       
       # if we don't know about the symbol, send the method to
       # Object which will raise an exception
