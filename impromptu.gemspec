@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{impromptu}
-  s.version = "1.0.1"
+  s.version = "1.1.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Will Cannings"]
@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     ".document",
+    "CHANGELOG",
     "LICENSE",
     "README.rdoc",
     "Rakefile",
@@ -46,6 +47,10 @@ Gem::Specification.new do |s|
     "test/framework/other/load.rb",
     "test/framework/other/two.rb",
     "test/framework/private/klass.rb",
+    "test/framework/private/other.rb",
+    "test/framework/stdlib/string.rb",
+    "test/framework/stdlib/timeout.rb",
+    "test/framework/stdlib/timeout/error.rb",
     "test/framework/test.components",
     "test/helper.rb",
     "test/test_autoload.rb",
@@ -56,6 +61,7 @@ Gem::Specification.new do |s|
     "test/test_integration.rb",
     "test/test_ordered_set.rb",
     "test/test_resource.rb",
+    "test/test_stdlib.rb",
     "test/test_symbol.rb"
   ]
   s.homepage = %q{http://github.com/willcannings/impromptu}
@@ -76,6 +82,10 @@ Gem::Specification.new do |s|
     "test/framework/other/load.rb",
     "test/framework/other/two.rb",
     "test/framework/private/klass.rb",
+    "test/framework/private/other.rb",
+    "test/framework/stdlib/string.rb",
+    "test/framework/stdlib/timeout.rb",
+    "test/framework/stdlib/timeout/error.rb",
     "test/helper.rb",
     "test/test_autoload.rb",
     "test/test_component.rb",
@@ -85,6 +95,7 @@ Gem::Specification.new do |s|
     "test/test_integration.rb",
     "test/test_ordered_set.rb",
     "test/test_resource.rb",
+    "test/test_stdlib.rb",
     "test/test_symbol.rb"
   ]
 
