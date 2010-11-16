@@ -206,7 +206,10 @@ module Impromptu
         name.gsub!(/\/(.?)/) {|character| "::#{character[1].upcase}" }
         
         # upcase the first character, and any characters following an underscore
-        name.gsub(/(?:^|_)(.)/) {|character| character.upcase}.to_sym
+        name.gsub!(/(?:^|_)(.)/) {|character| character.upcase}
+        
+        # remove underscores
+        name.gsub('_', '').to_sym
       end
       
       def combine_symbol_with_namespace(symbol)

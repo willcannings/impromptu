@@ -35,15 +35,15 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal nil, Impromptu.components['other'].namespace
     end
     
-    should "05 start tracking 10 files" do
+    should "05 start tracking 11 files" do
       assert_equal 2, Impromptu.components['framework'].folders.first.files.size
       assert_equal 2, Impromptu.components['framework.extensions'].folders.first.files.size
       assert_equal 3, Impromptu.components['other'].folders.first.files.size
       assert_equal 2, Impromptu.components['private'].folders.first.files.size
-      assert_equal 1, Impromptu.components['folder_namespace'].folders.first.files.size
+      assert_equal 2, Impromptu.components['folder_namespace'].folders.first.files.size
     end
     
-    should "06 load definitions for 12 resources" do
+    should "06 load definitions for 13 resources" do
       assert Impromptu.root_resource.child?(:Framework)
       assert Impromptu.root_resource.child(:Framework).child?(:Extensions)
       assert Impromptu.root_resource.child(:Framework).child(:Extensions).child?(:Blog)
@@ -56,6 +56,7 @@ class TestIntegration < Test::Unit::TestCase
       assert Impromptu.root_resource.child?(:Another)
       assert Impromptu.root_resource.child(:Namespace)
       assert Impromptu.root_resource.child(:Namespace).child?(:Stream)
+      assert Impromptu.root_resource.child(:Namespace).child?(:TwoNames)
     end
     
     should "07 correctly mark namespace resources" do
@@ -71,6 +72,7 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal false, Impromptu.root_resource.child(:Another).namespace?
       assert_equal true, Impromptu.root_resource.child(:Namespace).namespace?
       assert_equal false, Impromptu.root_resource.child(:Namespace).child(:Stream).namespace?
+      assert_equal false, Impromptu.root_resource.child(:Namespace).child(:TwoNames).namespace?
     end
     
     should "08 keep all resources unloaded to start with" do
@@ -86,6 +88,7 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal false, Impromptu.root_resource.child(:'Another').loaded?
       assert_equal false, Impromptu.root_resource.child(:'Namespace').loaded?
       assert_equal false, Impromptu.root_resource.child(:'Namespace::Stream').loaded?
+      assert_equal false, Impromptu.root_resource.child(:'Namespace::TwoNames').loaded?
     end
     
     should "09 have all resources specified by the correct number of files" do
@@ -101,6 +104,7 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal 1, Impromptu.root_resource.child(:'ModTwo').files.size
       assert_equal 1, Impromptu.root_resource.child(:'Another').files.size
       assert_equal 1, Impromptu.root_resource.child(:'Namespace::Stream').files.size
+      assert_equal 1, Impromptu.root_resource.child(:'Namespace::TwoNames').files.size
       assert_equal true, Impromptu.root_resource.child(:'Framework').implicitly_defined?
       assert_equal true, Impromptu.root_resource.child(:'Namespace').implicitly_defined?
     end
@@ -180,9 +184,14 @@ class TestIntegration < Test::Unit::TestCase
       
       # folder namespace
       Impromptu.root_resource.child(:'Namespace::Stream').reload
+      Impromptu.root_resource.child(:'Namespace::TwoNames').reload
       assert_equal true, Impromptu.root_resource.child(:'Namespace::Stream').loaded?
+      assert_equal true, Impromptu.root_resource.child(:'Namespace::TwoNames').loaded?
       assert_nothing_raised do
         Namespace::Stream
+      end
+      assert_nothing_raised do
+        Namespace::TwoNames
       end
     end
     

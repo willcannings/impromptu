@@ -53,7 +53,6 @@ module Impromptu
       else
         @files.first.reload
       end
-      self.reference.extend(Impromptu::Autoload)
     end
     
     # Unload the resource by undefining the constant representing it.

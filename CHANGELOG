@@ -1,3 +1,7 @@
+1.2.1 - Fix bug where namespaces were not removed after camelcasing a file name
+      - Simplify autoloading behaviour and fix a bug which affected autoloading
+        constants while in the middle of an existing autoload.
+
 1.2.0 - New method 'root?' which tests is symbols are prefixed with two colons
       - New 'namespace' option for folders allows you to override a components
         namespace with a namespace specific to a folder.
