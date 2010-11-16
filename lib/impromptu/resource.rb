@@ -14,6 +14,7 @@ module Impromptu
       @children     = {}
       @reference    = nil
       @namespace    = false
+      @dont_undef   = self.loaded?  # existing constants, such as 'String', should never be unloaded
       @implicitly_defined = true
     end
     
@@ -60,9 +61,11 @@ module Impromptu
     # unloaded. This allows the resource to be garbage collected.
     def unload
       return unless loaded?
-      @children.each_value {|child| child.unload}
-      @parent.reference.send(:remove_const, @base_symbol)
-      @reference = nil
+      @children.each_value(&:unload)
+      unless @dont_undef
+        @parent.reference.send(:remove_const, @base_symbol)
+        @reference = nil
+      end
     end
     
     # Start tracking a file which implements this resource. If the
@@ -191,6 +194,15 @@ module Impromptu
       return true if root?
       return false unless @parent && @parent.loaded? && @parent.reference
       parent.reference.constants.include?(@base_symbol)
+    end
+    
+    # Loads this resource if it is an extension of an existing class
+    # or module (such as an object in the standard library). Should
+    # only be called on app startup by Impromptu itself. Recurses to
+    # this resource's children as well.
+    def load_if_extending_stdlib
+      reload if loaded? && !self.root?
+      @children.each_value(&:load_if_extending_stdlib)
     end
   end
 end

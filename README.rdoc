@@ -47,6 +47,11 @@ In both these components no file provides the Framework module. In this case, Im
 
 Just as a resource may be implemented by multiple files, a file may implement multiple resources. Because Impromptu doesn't scan files before loading them you must manually tell Impromptu which resources a file provides if it provides more than one, or if the name of the resource cannot be inferred from the name of the file. Folder definitions may take a block (as with the 'other' folder from the 'other' component). Calling file within the block informs Impromptu of a file to load, and specifying the :provides option allows you to tell Impromptu the names of the resources implemented in the file.
 
+== Extending the Standard Library
+Impromptu deals with resources that implement extensions to the standard library a little differently. When a resource is declared, if the implementation of the resource already exists, it assumed the resource extends a standard Ruby class or module. For instance, a resource extending String falls in to this category.
+
+These components are automatically loaded at the start of your program since it's impossible for Impromptu to detect when you use them for the first time. If the folder containing their source files is reloadable, any changes to the files will cause the files to be re-required without undefining the module or class. Normally Impromptu undefines a resource before re-requiring the files which define it to ensure the definition doesn't become 'stale'. This isn't possible with preexisting resources, so a side effect of reloading these files is that methods or constants you remove from your extension will remain defined. You will need to restart your program to ensure a clean definition.
+
 == Defining Components
 Before any resources from a component can be loaded, you must define the components of your system in a block provided to define_components. There are two options: you can either define components directly in this block, or you can call the 'parse_file' method to load a file which defines the components instead.
 

@@ -31,9 +31,7 @@ module Impromptu
   def self.reset
     # unload all resources
     unless @root_resource.nil?
-      @root_resource.children.each_value do |resource|
-        resource.unload
-      end
+      @root_resource.unload
     end
     
     # reset lists to nil
@@ -57,6 +55,11 @@ module Impromptu
     components.each do |component|
       component.freeze
     end
+    
+    # preload any resources which extend existing standard library
+    # modules or classes. we can't catch uses of these resources
+    # using const_missing, so we need to load them now.
+    @root_resource.load_if_extending_stdlib
   end
 
   # Open and run a file defining components. The folder containing
