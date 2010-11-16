@@ -13,8 +13,8 @@ class TestIntegration < Test::Unit::TestCase
     # ----------------------------------------
     # Loading component definitions
     # ----------------------------------------
-    should "01 create four components" do
-      assert_equal 4, Impromptu.components.size
+    should "01 create five components" do
+      assert_equal 5, Impromptu.components.size
     end
     
     should "02 have a single folder per component" do
@@ -22,6 +22,7 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal 1, Impromptu.components['framework.extensions'].folders.size
       assert_equal 1, Impromptu.components['other'].folders.size
       assert_equal 1, Impromptu.components['private'].folders.size
+      assert_equal 1, Impromptu.components['folder_namespace'].folders.size
     end
     
     should "03 have a single require in the framework component" do
@@ -34,14 +35,15 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal nil, Impromptu.components['other'].namespace
     end
     
-    should "05 start tracking 8 files" do
+    should "05 start tracking 10 files" do
       assert_equal 2, Impromptu.components['framework'].folders.first.files.size
       assert_equal 2, Impromptu.components['framework.extensions'].folders.first.files.size
       assert_equal 3, Impromptu.components['other'].folders.first.files.size
       assert_equal 2, Impromptu.components['private'].folders.first.files.size
+      assert_equal 1, Impromptu.components['folder_namespace'].folders.first.files.size
     end
     
-    should "06 load definitions for 9 resources" do
+    should "06 load definitions for 12 resources" do
       assert Impromptu.root_resource.child?(:Framework)
       assert Impromptu.root_resource.child(:Framework).child?(:Extensions)
       assert Impromptu.root_resource.child(:Framework).child(:Extensions).child?(:Blog)
@@ -51,7 +53,9 @@ class TestIntegration < Test::Unit::TestCase
       assert Impromptu.root_resource.child?(:OtherName)
       assert Impromptu.root_resource.child?(:ModOne)
       assert Impromptu.root_resource.child?(:ModTwo)
-      assert Impromptu.root_resource.child(:Framework).child?(:Another)
+      assert Impromptu.root_resource.child?(:Another)
+      assert Impromptu.root_resource.child(:Namespace)
+      assert Impromptu.root_resource.child(:Namespace).child?(:Stream)
     end
     
     should "07 correctly mark namespace resources" do
@@ -64,7 +68,9 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal false, Impromptu.root_resource.child(:OtherName).namespace?
       assert_equal false, Impromptu.root_resource.child(:ModOne).namespace?
       assert_equal false, Impromptu.root_resource.child(:ModTwo).namespace?
-      assert_equal false, Impromptu.root_resource.child(:Framework).child(:Another).namespace?
+      assert_equal false, Impromptu.root_resource.child(:Another).namespace?
+      assert_equal true, Impromptu.root_resource.child(:Namespace).namespace?
+      assert_equal false, Impromptu.root_resource.child(:Namespace).child(:Stream).namespace?
     end
     
     should "08 keep all resources unloaded to start with" do
@@ -77,7 +83,9 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal false, Impromptu.root_resource.child(:'OtherName').loaded?
       assert_equal false, Impromptu.root_resource.child(:'ModOne').loaded?
       assert_equal false, Impromptu.root_resource.child(:'ModTwo').loaded?
-      assert_equal false, Impromptu.root_resource.child(:Framework).child(:'Another').loaded?
+      assert_equal false, Impromptu.root_resource.child(:'Another').loaded?
+      assert_equal false, Impromptu.root_resource.child(:'Namespace').loaded?
+      assert_equal false, Impromptu.root_resource.child(:'Namespace::Stream').loaded?
     end
     
     should "09 have all resources specified by the correct number of files" do
@@ -91,20 +99,29 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal 2, Impromptu.root_resource.child(:'OtherName').files.size
       assert_equal 1, Impromptu.root_resource.child(:'ModOne').files.size
       assert_equal 1, Impromptu.root_resource.child(:'ModTwo').files.size
-      assert_equal 1, Impromptu.root_resource.child(:Framework).child(:'Another').files.size
+      assert_equal 1, Impromptu.root_resource.child(:'Another').files.size
+      assert_equal 1, Impromptu.root_resource.child(:'Namespace::Stream').files.size
       assert_equal true, Impromptu.root_resource.child(:'Framework').implicitly_defined?
+      assert_equal true, Impromptu.root_resource.child(:'Namespace').implicitly_defined?
     end
     
     
     # ----------------------------------------
     # Loading/unloading
     # ----------------------------------------
-    should "10 allow loading the implicitly defined framework module" do
+    should "10 allow loading the implicitly namespace modules" do
       assert_equal false, Impromptu.root_resource.child(:'Framework').loaded?
       Impromptu.root_resource.child(:'Framework').reload
       assert_equal true, Impromptu.root_resource.child(:'Framework').loaded?
       assert_nothing_raised do
         Framework
+      end
+      
+      assert_equal false, Impromptu.root_resource.child(:'Namespace').loaded?
+      Impromptu.root_resource.child(:'Namespace').reload
+      assert_equal true, Impromptu.root_resource.child(:'Namespace').loaded?
+      assert_nothing_raised do
+        Namespace
       end
     end
     
@@ -155,10 +172,17 @@ class TestIntegration < Test::Unit::TestCase
       end
       
       # private
-      Impromptu.root_resource.child(:Framework).child(:Another).reload
-      assert_equal true, Impromptu.root_resource.child(:Framework).child(:Another).loaded?
+      Impromptu.root_resource.child(:Another).reload
+      assert_equal true, Impromptu.root_resource.child(:Another).loaded?
       assert_nothing_raised do
-        Framework::Another
+        Another
+      end
+      
+      # folder namespace
+      Impromptu.root_resource.child(:'Namespace::Stream').reload
+      assert_equal true, Impromptu.root_resource.child(:'Namespace::Stream').loaded?
+      assert_nothing_raised do
+        Namespace::Stream
       end
     end
     

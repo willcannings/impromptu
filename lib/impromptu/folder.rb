@@ -1,7 +1,7 @@
 module Impromptu
   class Folder
-    attr_accessor :folder, :files, :component, :namespace
-    DEFAULT_OPTIONS   = {nested_namespaces: true, reloadable: true, implicitly_loaded: true}
+    attr_accessor :folder, :files, :component
+    DEFAULT_OPTIONS   = {nested_namespaces: true, reloadable: true, implicitly_loaded: true, namespace: nil}
     SOURCE_EXTENSIONS = %w{rb so bundle}
     
     # Register a new folder containing source files for a
@@ -20,6 +20,9 @@ module Impromptu
     # * implicitly_loaded: true by default. When true, reloads
     #   and the initial load of this folder will scan for source
     #   files and automatically infer resource definitions.
+    # * namespace: override a component's default namespace with
+    #   a namespace specific to this folder. The normal rules
+    #   with nested namespaces apply.
     def initialize(path, component, options={}, block)
       @folder     = path.realpath
       @component  = component
@@ -69,6 +72,19 @@ module Impromptu
       @options[:implicitly_loaded]
     end
     
+    # A string or symbol for this folder which overrides the components
+    # default namespace. Nil if no namespace has been defined.
+    def namespace
+      @options[:namespace]
+    end
+    
+    # If an overriding namespace has been defined for this folder,
+    # create a resource representing it and define it as a namespace.
+    def create_namespace
+      return if self.namespace.nil?
+      Impromptu.root_resource.get_or_create_child(self.namespace).namespace!
+    end
+        
     # Return the 'base' folder for a file contained within this
     # folder. For instance, a folder with nested namespaces would
     # return the path to a file from the root folder. Without

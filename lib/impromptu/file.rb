@@ -210,11 +210,14 @@ module Impromptu
       end
       
       def combine_symbol_with_namespace(symbol)
-        if @folder.component.namespace
-          "#{@folder.component.namespace}::#{symbol}".to_sym
-        else
-          symbol.to_sym
+        unless symbol.root?
+          if @folder.namespace
+            return "#{@folder.namespace}::#{symbol}".to_sym
+          elsif @folder.component.namespace
+            return "#{@folder.component.namespace}::#{symbol}".to_sym
+          end
         end
+        symbol.without_leading_colons.to_sym
       end
   end
 end

@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{impromptu}
-  s.version = "1.1.0"
+  s.version = "1.2.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Will Cannings"]
@@ -40,6 +40,7 @@ Gem::Specification.new do |s|
     "test/framework/copies/original_klass.rb",
     "test/framework/ext/extensions.rb",
     "test/framework/ext/extensions/blog.rb",
+    "test/framework/folder_namespace/stream.rb",
     "test/framework/lib/group/klass2.rb",
     "test/framework/lib/klass.rb",
     "test/framework/other/also.rb",
@@ -75,6 +76,7 @@ Gem::Specification.new do |s|
     "test/framework/copies/original_klass.rb",
     "test/framework/ext/extensions.rb",
     "test/framework/ext/extensions/blog.rb",
+    "test/framework/folder_namespace/stream.rb",
     "test/framework/lib/group/klass2.rb",
     "test/framework/lib/klass.rb",
     "test/framework/other/also.rb",

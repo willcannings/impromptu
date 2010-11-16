@@ -96,16 +96,17 @@ module Impromptu
     # Mark a component as 'frozen'. Modification of the component
     # requirements or list of folders is not allowed after this.
     def freeze
-      # freeze files
-      @folders.each do |folder|
-        folder.files.each do |file|
-          file.freeze
-        end
-      end
-      
       # create a blank namespace module if required
       unless namespace.nil?
         Impromptu.root_resource.get_or_create_child(namespace).namespace!
+      end
+      
+      # freeze files
+      @folders.each do |folder|
+        folder.create_namespace
+        folder.files.each do |file|
+          file.freeze
+        end
       end
       
       @frozen = true

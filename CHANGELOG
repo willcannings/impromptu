@@ -1,3 +1,12 @@
+1.2.0 - New method 'root?' which tests is symbols are prefixed with two colons
+      - New 'namespace' option for folders allows you to override a components
+        namespace with a namespace specific to a folder.
+      - Root symbols (::A) are now respected in provides options on files.
+        This allows files to implement resources which are not relative to the
+        component or folder namespace. For instance a folder with a namespace
+        :A containing a file which provides :B and ::C would create resources
+        for A::B and C.
+
 1.1.0 - Added support for resources which extend stdlib classes and modules
       - Added the ability to define exceptional files in a folder. Previously
         folders were either implicitly loaded (all files were loaded), or you

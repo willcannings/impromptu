@@ -20,6 +20,10 @@ end
 component 'private' do
   namespace :Framework
   folder 'private' do
-    file 'other.rb', provides: :Another
+    file 'other.rb', provides: :'::Another'
   end
+end
+
+component 'folder_namespace' do
+  folder 'folder_namespace', namespace: :Namespace
 end

@@ -1,4 +1,2 @@
-module Framework
-  module Another
-  end
+module Another
 end
