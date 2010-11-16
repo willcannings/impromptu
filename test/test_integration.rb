@@ -21,6 +21,7 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal 1, Impromptu.components['framework'].folders.size
       assert_equal 1, Impromptu.components['framework.extensions'].folders.size
       assert_equal 1, Impromptu.components['other'].folders.size
+      assert_equal 1, Impromptu.components['private'].folders.size
     end
     
     should "03 have a single require in the framework component" do
@@ -37,7 +38,7 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal 2, Impromptu.components['framework'].folders.first.files.size
       assert_equal 2, Impromptu.components['framework.extensions'].folders.first.files.size
       assert_equal 3, Impromptu.components['other'].folders.first.files.size
-      assert_equal 1, Impromptu.components['private'].folders.first.files.size
+      assert_equal 2, Impromptu.components['private'].folders.first.files.size
     end
     
     should "06 load definitions for 9 resources" do
@@ -50,6 +51,7 @@ class TestIntegration < Test::Unit::TestCase
       assert Impromptu.root_resource.child?(:OtherName)
       assert Impromptu.root_resource.child?(:ModOne)
       assert Impromptu.root_resource.child?(:ModTwo)
+      assert Impromptu.root_resource.child(:Framework).child?(:Another)
     end
     
     should "07 correctly mark namespace resources" do
@@ -62,6 +64,7 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal false, Impromptu.root_resource.child(:OtherName).namespace?
       assert_equal false, Impromptu.root_resource.child(:ModOne).namespace?
       assert_equal false, Impromptu.root_resource.child(:ModTwo).namespace?
+      assert_equal false, Impromptu.root_resource.child(:Framework).child(:Another).namespace?
     end
     
     should "08 keep all resources unloaded to start with" do
@@ -74,6 +77,7 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal false, Impromptu.root_resource.child(:'OtherName').loaded?
       assert_equal false, Impromptu.root_resource.child(:'ModOne').loaded?
       assert_equal false, Impromptu.root_resource.child(:'ModTwo').loaded?
+      assert_equal false, Impromptu.root_resource.child(:Framework).child(:'Another').loaded?
     end
     
     should "09 have all resources specified by the correct number of files" do
@@ -87,6 +91,7 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal 2, Impromptu.root_resource.child(:'OtherName').files.size
       assert_equal 1, Impromptu.root_resource.child(:'ModOne').files.size
       assert_equal 1, Impromptu.root_resource.child(:'ModTwo').files.size
+      assert_equal 1, Impromptu.root_resource.child(:Framework).child(:'Another').files.size
       assert_equal true, Impromptu.root_resource.child(:'Framework').implicitly_defined?
     end
     
@@ -147,6 +152,13 @@ class TestIntegration < Test::Unit::TestCase
       end
       assert_nothing_raised do
         ModTwo
+      end
+      
+      # private
+      Impromptu.root_resource.child(:Framework).child(:Another).reload
+      assert_equal true, Impromptu.root_resource.child(:Framework).child(:Another).loaded?
+      assert_nothing_raised do
+        Framework::Another
       end
     end
     
@@ -250,6 +262,22 @@ class TestIntegration < Test::Unit::TestCase
         assert_equal true, Impromptu.root_resource.child?(:'Framework::Unseen')
         Impromptu.root_resource.child(:'Framework::Unseen').reload
         assert Framework::Unseen.test_method
+      end
+    end
+    
+    context "and adding files to an explicitly defined folder" do
+      setup do
+        FileUtils.mv 'test/framework/copies/new_unseen.rb', 'test/framework/other/unseen.rb'
+      end
+      
+      teardown do
+        FileUtils.mv 'test/framework/other/unseen.rb', 'test/framework/copies/new_unseen.rb'
+      end
+      
+      should "not make add a file definition to the folder" do
+        assert_equal 3, Impromptu.components['other'].folders.first.files.size
+        Impromptu.update
+        assert_equal 3, Impromptu.components['other'].folders.first.files.size
       end
     end
     

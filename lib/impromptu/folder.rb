@@ -1,7 +1,7 @@
 module Impromptu
   class Folder
     attr_accessor :folder, :files, :component, :namespace
-    DEFAULT_OPTIONS   = {nested_namespaces: true, reloadable: true}
+    DEFAULT_OPTIONS   = {nested_namespaces: true, reloadable: true, implicitly_loaded: true}
     SOURCE_EXTENSIONS = %w{rb so bundle}
     
     # Register a new folder containing source files for a
@@ -17,13 +17,15 @@ module Impromptu
     #   will be reloaded every time Impromptu.update is
     #   called, and any modified files will be reloaded,
     #   removed files unloaded, and new files tracked.
+    # * implicitly_loaded: true by default. When true, reloads
+    #   and the initial load of this folder will scan for source
+    #   files and automatically infer resource definitions.
     def initialize(path, component, options={}, block)
       @folder     = path.realpath
       @component  = component
       @options    = DEFAULT_OPTIONS.merge(options)
       @block      = block
       @files      = OrderedSet.new
-      @implicitly_load_all_files = true
     end
     
     # Override eql? so two folders with the same path will be
@@ -44,12 +46,11 @@ module Impromptu
     # Otherwise the folder is scanned to produce an initial set of files
     # and resources provided by this folder.
     def load
-      if @block.nil?
-        self.reload_file_set
-      else
+      unless @block.nil?
         instance_eval &@block
         @block = nil # prevent the block from being run twice
       end
+      self.reload_file_set
     end
     
     # True if the folder uses nested namespaces
@@ -60,6 +61,12 @@ module Impromptu
     # True if the folder is reloadable
     def reloadable?
       @options[:reloadable]
+    end
+    
+    # True if the folder is implicitly loaded (we scan the folder for
+    # source files and automatically infer resources)
+    def implicitly_loaded?
+      @options[:implicitly_loaded]
     end
     
     # Return the 'base' folder for a file contained within this
@@ -78,17 +85,16 @@ module Impromptu
       end
     end
     
-    # Explicitly include a file from this folder. If you use this
-    # method, only files included by this method will be loaded.
-    # If you do not use this method, all files within this folder
-    # will be accessible. For this reason, you probably want to
-    # separate out files which need to be defined this way into a
-    # folder separate to the majority of your source files. Options
-    # may be:
+    # Explicitly include a file from this folder. Combined with the
+    # implicitly_loaded option set to false, this method allows you
+    # to manually define a set of files to load from a folder. If
+    # implicitly_loaded is true, this method can be used to provide
+    # definitions of exceptional files (for example files which define
+    # multiple resources, or files with exceptional names).
+    # Options may be:
     # * provides (required): an array of symbols, or a symbol
-    #   inidicating the name of the resource(s) provided by the file
+    #   indicating the name of the resource(s) provided by the file
     def file(name, options={})
-      @implicitly_load_all_files = false
       file = Impromptu::File.new(@folder.join(*name).realpath, self, options[:provides])
       @files.push(file).add_resource_definition
     end
@@ -99,7 +105,7 @@ module Impromptu
     # and any previously unseen files loaded, existing files
     # reloaded, and removed files unloaded.
     def reload
-      reload_file_set if @implicitly_load_all_files
+      reload_file_set if implicitly_loaded?
       @files.each {|file| file.reload_if_modified}
     end
     
@@ -110,12 +116,12 @@ module Impromptu
     # as well), and any new files insert their resources in to
     # the known resources tree.
     def reload_file_set
-      return unless @implicitly_load_all_files
+      return unless implicitly_loaded?
       old_file_set = @files.to_a
       new_file_set = []
       changes = false
       
-      # find all current files and add them if necessary
+      # find all source files and add unseen files to the files list
       @folder.find do |path|
         next unless source_file?(path)
         file = Impromptu::File.new(path.realpath, self)

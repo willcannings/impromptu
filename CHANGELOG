@@ -1,0 +1,10 @@
+1.1.0 - Added support for resources which extend stdlib classes and modules
+      - Added the ability to define exceptional files in a folder. Previously
+        folders were either implicitly loaded (all files were loaded), or you
+        could manually define which files to load. Now you can mix the two
+        styles and have some files automatically loaded, and others with
+        custom definitions (useful for files with exceptional names)
+
+1.0.1 - Fix bug where nested resources were not autoloaded
+      
+1.0.0 - Initial Release

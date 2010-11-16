@@ -10,14 +10,16 @@ component 'framework.extensions' do
 end
 
 component 'other' do
-  folder 'other' do
+  folder 'other', implicitly_loaded: false do
     file 'load.rb'
-    file 'also.rb', :provides => :OtherName
-    file 'two.rb', :provides => [:ModOne, :ModTwo, :OtherName]
+    file 'also.rb', provides: :OtherName
+    file 'two.rb', provides: [:ModOne, :ModTwo, :OtherName]
   end
 end
 
 component 'private' do
   namespace :Framework
-  folder 'private'
+  folder 'private' do
+    file 'other.rb', provides: :Another
+  end
 end
