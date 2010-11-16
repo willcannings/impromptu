@@ -27,6 +27,10 @@ class TestResource < Test::Unit::TestCase
       assert_respond_to @symbol, :root_symbol
     end
     
+    should "respond to root?" do
+      assert_respond_to @symbol, :root?
+    end
+    
     should "respond to each_namespaced_symbol" do
       assert_respond_to @symbol, :each_namespaced_symbol
     end
@@ -56,6 +60,10 @@ class TestResource < Test::Unit::TestCase
       should "return itself for root_symbol" do
         assert_equal @symbol, @symbol.root_symbol
       end
+      
+      should "return false for root?" do
+        assert_equal false, @symbol.root?
+      end
     end
     
     # ----------------------------------------
@@ -80,6 +88,10 @@ class TestResource < Test::Unit::TestCase
       
       should "return the first nested name for root_symbol" do
         assert_equal :TopLevel, @symbol.root_symbol
+      end
+      
+      should "return false for root?" do
+        assert_equal false, @symbol.root?
       end
       
       should "return the last nested name for base_symbol" do
@@ -117,6 +129,10 @@ class TestResource < Test::Unit::TestCase
       
       should "return itself for base_symbol" do
         assert_equal :A, @symbol.base_symbol
+      end
+      
+      should "return true for root?" do
+        assert_equal true, @symbol.root?
       end
       
       should "return itself for root_symbol" do

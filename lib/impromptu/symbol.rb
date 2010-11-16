@@ -30,6 +30,11 @@ class Symbol
     self.nested_symbols.first
   end
   
+  # True if the symbol starts with two colons
+  def root?
+    self.to_s.start_with?('::')
+  end
+  
   # Iterate through a namespaced symbol by visiting each
   # name in turn, including its parent names. e.g calling
   # on A::B::C would yield :A, :A::B, and :A::B::C
