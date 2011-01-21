@@ -17,8 +17,8 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal 5, Impromptu.components.size
     end
     
-    should "02 have a single folder per component" do
-      assert_equal 1, Impromptu.components['framework'].folders.size
+    should "02 have the correct number of folders per component" do
+      assert_equal 2, Impromptu.components['framework'].folders.size
       assert_equal 1, Impromptu.components['framework.extensions'].folders.size
       assert_equal 1, Impromptu.components['other'].folders.size
       assert_equal 1, Impromptu.components['private'].folders.size
@@ -49,6 +49,7 @@ class TestIntegration < Test::Unit::TestCase
       assert Impromptu.root_resource.child(:Framework).child(:Extensions).child?(:Blog)
       assert Impromptu.root_resource.child(:Framework).child?(:Klass)
       assert Impromptu.root_resource.child(:Framework).child?(:Klass2)
+      assert Impromptu.root_resource.child(:Framework).child?(:Preload)
       assert Impromptu.root_resource.child?(:Load)
       assert Impromptu.root_resource.child?(:OtherName)
       assert Impromptu.root_resource.child?(:ModOne)
@@ -70,13 +71,13 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal false, Impromptu.root_resource.child(:ModOne).namespace?
       assert_equal false, Impromptu.root_resource.child(:ModTwo).namespace?
       assert_equal false, Impromptu.root_resource.child(:Another).namespace?
-      assert_equal true, Impromptu.root_resource.child(:Namespace).namespace?
+      assert_equal true,  Impromptu.root_resource.child(:Namespace).namespace?
       assert_equal false, Impromptu.root_resource.child(:Namespace).child(:Stream).namespace?
       assert_equal false, Impromptu.root_resource.child(:Namespace).child(:TwoNames).namespace?
     end
     
-    should "08 keep all resources unloaded to start with" do
-      assert_equal false, Impromptu.root_resource.child(:'Framework').loaded?
+    should "08 keep all non-preloaded resources unloaded to start with, and preload otherwise" do
+      # normal, non preloaded resources
       assert_equal false, Impromptu.root_resource.child(:'Framework::Extensions').loaded?
       assert_equal false, Impromptu.root_resource.child(:'Framework::Extensions::Blog').loaded?
       assert_equal false, Impromptu.root_resource.child(:'Framework::Klass').loaded?
@@ -89,14 +90,19 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal false, Impromptu.root_resource.child(:'Namespace').loaded?
       assert_equal false, Impromptu.root_resource.child(:'Namespace::Stream').loaded?
       assert_equal false, Impromptu.root_resource.child(:'Namespace::TwoNames').loaded?
+      
+      # preloaded resources are the opposite of this
+      assert Impromptu.root_resource.child(:'Framework').loaded?
+      assert Impromptu.root_resource.child(:'Framework::Preload').loaded?
     end
-    
+
     should "09 have all resources specified by the correct number of files" do
       assert_equal 0, Impromptu.root_resource.child(:'Framework').files.size
       assert_equal 1, Impromptu.root_resource.child(:'Framework::Extensions').files.size
       assert_equal 1, Impromptu.root_resource.child(:'Framework::Extensions::Blog').files.size
       assert_equal 2, Impromptu.root_resource.child(:'Framework::Klass').files.size
       assert_equal 1, Impromptu.root_resource.child(:'Framework::Klass2').files.size
+      assert_equal 1, Impromptu.root_resource.child(:'Framework::Preload').files.size
       assert_equal 1, Impromptu.root_resource.child(:'Framework::Klass2').files.size
       assert_equal 1, Impromptu.root_resource.child(:'Load').files.size
       assert_equal 2, Impromptu.root_resource.child(:'OtherName').files.size
@@ -114,7 +120,6 @@ class TestIntegration < Test::Unit::TestCase
     # Loading/unloading
     # ----------------------------------------
     should "10 allow loading the implicitly namespace modules" do
-      assert_equal false, Impromptu.root_resource.child(:'Framework').loaded?
       Impromptu.root_resource.child(:'Framework').reload
       assert_equal true, Impromptu.root_resource.child(:'Framework').loaded?
       assert_nothing_raised do
@@ -130,6 +135,13 @@ class TestIntegration < Test::Unit::TestCase
     end
     
     should "11 load resources using associated files when required" do
+      # preloaded resource
+      assert_nothing_raised do
+        Framework::Preload
+      end
+      assert_respond_to Framework::Preload, :method
+      assert Framework::Preload.method
+      
       # ext
       Impromptu.root_resource.child(:'Framework::Extensions::Blog').reload
       assert_equal true, Impromptu.root_resource.child(:'Framework::Extensions').loaded?
@@ -243,6 +255,23 @@ class TestIntegration < Test::Unit::TestCase
       Impromptu.root_resource.child(:'Framework::Extensions::Blog').reload
       assert_equal true, Impromptu.root_resource.child(:'Framework::Extensions').loaded?
       assert_equal true, Impromptu.root_resource.child(:'Framework::Extensions::Blog').loaded?
+    end
+    
+    should "15 automatically reload preloaded resources when their parent is reloaded" do
+      # ensure the preloaded resource is in fact preloaded
+      assert Impromptu.root_resource.child(:'Framework').loaded?
+      assert Impromptu.root_resource.child(:'Framework::Preload').loaded?
+      assert_nothing_raised do
+        Framework::Preload
+      end
+      
+      # reload the parent resource and ensure the preloaded resource is still available
+      Impromptu.root_resource.child(:'Framework').reload
+      assert Impromptu.root_resource.child(:'Framework').loaded?
+      assert Impromptu.root_resource.child(:'Framework::Preload').loaded?
+      assert_nothing_raised do
+        Framework::Preload
+      end
     end
     
     

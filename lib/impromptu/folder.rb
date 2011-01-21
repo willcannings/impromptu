@@ -1,7 +1,7 @@
 module Impromptu
   class Folder
     attr_accessor :folder, :files, :component
-    DEFAULT_OPTIONS   = {nested_namespaces: true, reloadable: true, implicitly_loaded: true, namespace: nil}
+    DEFAULT_OPTIONS   = {nested_namespaces: true, reloadable: true, implicitly_loaded: true, namespace: nil, preload: false}
     SOURCE_EXTENSIONS = %w{rb so bundle}
     
     # Register a new folder containing source files for a
@@ -23,6 +23,9 @@ module Impromptu
     # * namespace: override a component's default namespace with
     #   a namespace specific to this folder. The normal rules
     #   with nested namespaces apply.
+    # * preload: forces the loading of all files within a folder.
+    #   The resources defined can still be reloaded, but loading
+    #   won't wait until the resource is referenced.
     def initialize(path, component, options={}, block)
       @folder     = path.realpath
       @component  = component
@@ -70,6 +73,21 @@ module Impromptu
     # source files and automatically infer resources)
     def implicitly_loaded?
       @options[:implicitly_loaded]
+    end
+    
+    # True if the resources of the folder are loaded immediately on
+    # startup, and won't be autoloaded.
+    def preload?
+      @options[:preload]
+    end
+    
+    # Preload the resources defined by this folder. Should only be called
+    # by the Impromptu module, and only once (at app startup).
+    def preload
+      return unless preload?
+      @files.each do |file|
+        file.reload
+      end
     end
     
     # A string or symbol for this folder which overrides the components
@@ -158,6 +176,16 @@ module Impromptu
       if changes
         @files.each do |file|
           file.refreeze
+        end
+      end
+      
+      # ensure all resources defined by this folder
+      # are marked to be preloaded if required
+      if preload?
+        @files.each do |file|
+          file.resources.each do |resource|
+            resource.preload = true
+          end
         end
       end
     end

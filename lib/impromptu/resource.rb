@@ -4,7 +4,7 @@ module Impromptu
   # resources yourself - use component definitions to define folders
   # of files which will implement resources.
   class Resource
-    attr_reader :name, :base_symbol, :files, :children, :parent
+    attr_reader :name, :base_symbol, :files, :children, :parent, :preload
     
     def initialize(name, parent)
       @name         = name.to_sym
@@ -15,6 +15,7 @@ module Impromptu
       @reference    = nil
       @namespace    = false
       @dont_undef   = self.loaded?  # existing constants, such as 'String', should never be unloaded
+      @preload      = false # true if any folder defining this resource is marked to be preloaded
       @implicitly_defined = true
     end
     
@@ -30,6 +31,16 @@ module Impromptu
     # always be unique.
     def hash
       @name.hash
+    end
+    
+    # Define this resource as preloaded
+    def preload=(preload)
+      @preload = preload
+    end
+    
+    # True if this resource is defined as preloaded
+    def preload?
+      @preload
     end
     
     # Attempts to retrieve a reference to the object represented by
@@ -48,11 +59,12 @@ module Impromptu
     def reload
       @parent.reload unless @parent.loaded?
       if @implicitly_defined
-        self.unload
+        unload
         Object.module_eval "module #{@name}; end"
       else
         @files.first.reload
       end
+      reload_preloaded_resources
     end
     
     # Unload the resource by undefining the constant representing it.
@@ -202,6 +214,11 @@ module Impromptu
     def load_if_extending_stdlib
       reload if loaded? && !self.root?
       @children.each_value(&:load_if_extending_stdlib)
+    end
+    
+    def reload_preloaded_resources
+      reload if !loaded? && preload?
+      @children.each_value(&:reload_preloaded_resources)
     end
   end
 end

@@ -2,6 +2,7 @@ component 'framework' do
 	namespace :Framework
 	requires  'mathn'
 	folder    'lib', nested_namespaces: false
+	folder    'preload', preload: true
 end
 
 component 'framework.extensions' do

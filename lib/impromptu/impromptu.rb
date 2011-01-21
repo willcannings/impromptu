@@ -60,6 +60,13 @@ module Impromptu
     # modules or classes. we can't catch uses of these resources
     # using const_missing, so we need to load them now.
     @root_resource.load_if_extending_stdlib
+    
+    # load any folders which are to be preloaded
+    components.each do |component|
+      component.folders.each do |folder|
+        folder.preload if folder.preload?
+      end
+    end
   end
 
   # Open and run a file defining components. The folder containing
