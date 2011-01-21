@@ -1,9 +1,9 @@
 module Impromptu
   class File
-    attr_reader :path, :folder, :resources, :related_resources, :related_files, :modified_time
+    attr_reader :path, :folder, :resources, :related_resources, :related_files, :modified_time, :preload
     RELOADABLE_EXTENSIONS = %w{rb}
     
-    def initialize(path, folder, provides=[])
+    def initialize(path, folder, preload=false, provides=[])
       @path               = path
       @folder             = folder
       @resources          = OrderedSet.new
@@ -12,6 +12,7 @@ module Impromptu
       @frozen             = false
       @modified_time      = nil
       @dirty              = true
+      @preload            = preload
       @provides           = [provides].compact.flatten
     end
     
@@ -25,6 +26,17 @@ module Impromptu
     # in the same hash value.
     def hash
       @path.hash
+    end
+    
+    # Indicate whether this file needs to be preloaded
+    def preload=(preload)
+      @preload = preload
+    end
+    
+    # True if this file needs to be preloaded before other files
+    # are automatically loaded on demand
+    def preload?
+      @preload
     end
     
     # Traverse the file/resource graph to determine which total
@@ -181,6 +193,7 @@ module Impromptu
       @provides.each do |resource_name|
         resource = Impromptu.root_resource.get_or_create_child(combine_symbol_with_namespace(resource_name))
         resource.add_file(self)
+        resource.preload = preload?
         @resources << resource
       end
     end

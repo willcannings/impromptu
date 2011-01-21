@@ -129,7 +129,8 @@ module Impromptu
     # * provides (required): an array of symbols, or a symbol
     #   indicating the name of the resource(s) provided by the file
     def file(name, options={})
-      file = Impromptu::File.new(@folder.join(*name).realpath, self, options[:provides])
+      file_preload = options[:preload] || preload?
+      file = Impromptu::File.new(@folder.join(*name).realpath, self, file_preload, options[:provides])
       @files.push(file).add_resource_definition
     end
     
@@ -158,7 +159,7 @@ module Impromptu
       # find all source files and add unseen files to the files list
       @folder.find do |path|
         next unless source_file?(path)
-        file = Impromptu::File.new(path.realpath, self)
+        file = Impromptu::File.new(path.realpath, self, preload?)
         new_file_set << file
         unless @files.include?(file)
           changes = true
@@ -176,16 +177,6 @@ module Impromptu
       if changes
         @files.each do |file|
           file.refreeze
-        end
-      end
-      
-      # ensure all resources defined by this folder
-      # are marked to be preloaded if required
-      if preload?
-        @files.each do |file|
-          file.resources.each do |resource|
-            resource.preload = true
-          end
         end
       end
     end

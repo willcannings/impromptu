@@ -33,12 +33,13 @@ module Impromptu
       @name.hash
     end
     
-    # Define this resource as preloaded
+    # Indicate whether this resource needs to be preloaded
     def preload=(preload)
       @preload = preload
     end
     
-    # True if this resource is defined as preloaded
+    # True if this resource needs to be preloaded before other files
+    # are automatically loaded on demand
     def preload?
       @preload
     end
