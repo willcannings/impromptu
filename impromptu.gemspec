@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{impromptu}
-  s.version = "1.2.1"
+  s.version = "1.3.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Will Cannings"]
-  s.date = %q{2010-11-16}
+  s.date = %q{2011-01-21}
   s.description = %q{Component and dependency manager for Ruby}
   s.email = %q{me@willcannings.com}
   s.extra_rdoc_files = [
@@ -48,6 +48,7 @@ Gem::Specification.new do |s|
     "test/framework/other/ignore.rb",
     "test/framework/other/load.rb",
     "test/framework/other/two.rb",
+    "test/framework/preload/preload.rb",
     "test/framework/private/klass.rb",
     "test/framework/private/other.rb",
     "test/framework/stdlib/string.rb",
@@ -85,6 +86,7 @@ Gem::Specification.new do |s|
     "test/framework/other/ignore.rb",
     "test/framework/other/load.rb",
     "test/framework/other/two.rb",
+    "test/framework/preload/preload.rb",
     "test/framework/private/klass.rb",
     "test/framework/private/other.rb",
     "test/framework/stdlib/string.rb",
