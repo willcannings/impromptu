@@ -70,10 +70,26 @@ module Impromptu
     
     # Unload the resource by undefining the constant representing it.
     # Any resources contained within this resource will also be
-    # unloaded. This allows the resource to be garbage collected.
+    # unloaded. This allows the resource to be garbage collected. If
+    # the resource is a class, you can define a class method called
+    # 'descendants' that returns an array of references to subclasses.
+    # Any subclasses known to Impromptu will also be unloaded, just as
+    # namespaced children are. This prevents subclasses holding a
+    # reference to a stale version of a super class.
     def unload
       return unless loaded?
+      
+      # unload namespaced children
       @children.each_value(&:unload)
+      
+      # unload descendants if they can be reloaded by impromptu
+      if reference.respond_to? :descendants
+        reference.descendants.each do |descendant|
+          resource = Impromptu.root_resource.child(descendant.name.to_sym)
+          resource.unload unless resource.nil?
+        end
+      end
+      
       unless @dont_undef
         @parent.reference.send(:remove_const, @base_symbol)
         @reference = nil
@@ -217,6 +233,10 @@ module Impromptu
       @children.each_value(&:load_if_extending_stdlib)
     end
     
+    # Loads this resource, and any child resources, if the resource is
+    # marked as requiring preloading, and the resource is not currently
+    # loaded. This loading may happen multiple times during the application
+    # life cycle depending on whether parent resources are reloaded and so on.
     def reload_preloaded_resources
       reload if !loaded? && preload?
       @children.each_value(&:reload_preloaded_resources)

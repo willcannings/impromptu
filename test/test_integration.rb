@@ -35,19 +35,20 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal nil, Impromptu.components['other'].namespace
     end
     
-    should "05 start tracking 11 files" do
-      assert_equal 2, Impromptu.components['framework'].folders.first.files.size
+    should "05 start tracking all files" do
+      assert_equal 3, Impromptu.components['framework'].folders.first.files.size
       assert_equal 2, Impromptu.components['framework.extensions'].folders.first.files.size
       assert_equal 3, Impromptu.components['other'].folders.first.files.size
       assert_equal 2, Impromptu.components['private'].folders.first.files.size
       assert_equal 2, Impromptu.components['folder_namespace'].folders.first.files.size
     end
     
-    should "06 load definitions for 13 resources" do
+    should "06 load definitions for all resources" do
       assert Impromptu.root_resource.child?(:Framework)
       assert Impromptu.root_resource.child(:Framework).child?(:Extensions)
       assert Impromptu.root_resource.child(:Framework).child(:Extensions).child?(:Blog)
       assert Impromptu.root_resource.child(:Framework).child?(:Klass)
+      assert Impromptu.root_resource.child(:Framework).child?(:SubKlass)
       assert Impromptu.root_resource.child(:Framework).child?(:Klass2)
       assert Impromptu.root_resource.child(:Framework).child?(:Preload)
       assert Impromptu.root_resource.child?(:Load)
@@ -65,6 +66,7 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal false, Impromptu.root_resource.child(:Framework).child(:Extensions).namespace?
       assert_equal false, Impromptu.root_resource.child(:Framework).child(:Extensions).child(:Blog).namespace?
       assert_equal false, Impromptu.root_resource.child(:Framework).child(:Klass).namespace?
+      assert_equal false, Impromptu.root_resource.child(:Framework).child(:SubKlass).namespace?
       assert_equal false, Impromptu.root_resource.child(:Framework).child(:Klass2).namespace?
       assert_equal false, Impromptu.root_resource.child(:Load).namespace?
       assert_equal false, Impromptu.root_resource.child(:OtherName).namespace?
@@ -81,6 +83,7 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal false, Impromptu.root_resource.child(:'Framework::Extensions').loaded?
       assert_equal false, Impromptu.root_resource.child(:'Framework::Extensions::Blog').loaded?
       assert_equal false, Impromptu.root_resource.child(:'Framework::Klass').loaded?
+      assert_equal false, Impromptu.root_resource.child(:'Framework::SubKlass').loaded?
       assert_equal false, Impromptu.root_resource.child(:'Framework::Klass2').loaded?
       assert_equal false, Impromptu.root_resource.child(:'Load').loaded?
       assert_equal false, Impromptu.root_resource.child(:'OtherName').loaded?
@@ -101,6 +104,7 @@ class TestIntegration < Test::Unit::TestCase
       assert_equal 1, Impromptu.root_resource.child(:'Framework::Extensions').files.size
       assert_equal 1, Impromptu.root_resource.child(:'Framework::Extensions::Blog').files.size
       assert_equal 2, Impromptu.root_resource.child(:'Framework::Klass').files.size
+      assert_equal 1, Impromptu.root_resource.child(:'Framework::SubKlass').files.size
       assert_equal 1, Impromptu.root_resource.child(:'Framework::Klass2').files.size
       assert_equal 1, Impromptu.root_resource.child(:'Framework::Preload').files.size
       assert_equal 1, Impromptu.root_resource.child(:'Framework::Klass2').files.size
@@ -292,9 +296,10 @@ class TestIntegration < Test::Unit::TestCase
         File.open('test/framework/lib/klass.rb', 'w') do |file|
           file.write old_klass
         end
+        sleep 1 # because file mod times are in seconds, delay by 1s so further tests so an updated timestamp
       end
       
-      should "reload a class definition correctly when a file is changed" do        
+      should "reload a class definition correctly when a file is changed" do
         # update impromptu and test the new klass is loaded
         assert_respond_to Framework::Klass, :standard_method
         assert_equal 2, Framework::Klass.overriden_method
@@ -302,6 +307,19 @@ class TestIntegration < Test::Unit::TestCase
         assert_respond_to Framework::Klass, :new_method
         assert_equal false, Framework::Klass.respond_to?(:standard_method)
         assert_equal 2, Framework::Klass.overriden_method
+      end
+      
+      should "unload a subclass if a parent class file is updated" do
+        assert_respond_to Framework::SubKlass, :standard_method
+        assert_equal 2, Framework::SubKlass.overriden_method
+
+        Impromptu.update
+        
+        assert_equal false, Impromptu.root_resource.child(:'Framework::SubKlass').loaded?
+        Impromptu.root_resource.child(:'Framework::SubKlass').reload
+        assert_respond_to Framework::SubKlass, :new_method
+        assert_equal false, Framework::SubKlass.respond_to?(:standard_method)
+        assert_equal 2, Framework::SubKlass.overriden_method
       end
     end
     

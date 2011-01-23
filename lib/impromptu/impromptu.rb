@@ -15,13 +15,17 @@ module Impromptu
   # have been marked as reloadable. Any modified files will be
   # reloaded, any new files will have their assiciated resources
   # inserted in the resource tree, and any removed files will be
-  # unloaded.
+  # unloaded. Any preloaded resources which are unloaded as a
+  # result of an update will automatically be reloaded again.
   def self.update
     components.each do |component|
       component.folders.each do |folder|
         folder.reload if folder.reloadable?
       end
     end
+    
+    # force any unloaded preloading resources to reload
+    self.root_resource.reload_preloaded_resources
   end
   
   # Reset Impromptu by removing all known components and resources.
