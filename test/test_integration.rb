@@ -416,5 +416,28 @@ class TestIntegration < Test::Unit::TestCase
         assert Framework::Klass2.new_method
       end
     end
+    
+    
+    # ----------------------------------------
+    # Preloading a folder after initialisation
+    # ----------------------------------------
+    context "and preloading a folder" do
+      setup do
+        Impromptu.components.first.folders.first.preload!
+      end
+      
+      should "preload the folder and all files and resources associated with it" do
+        folder = Impromptu.components.first.folders.first
+        assert folder.preload?
+        
+        folder.files.each do |file|
+          assert file.preload?  
+          file.resources.each do |resource|
+            assert resource.preload?
+          end
+        end  
+      end
+      
+    end
   end
 end

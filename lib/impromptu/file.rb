@@ -31,6 +31,7 @@ module Impromptu
     # Indicate whether this file needs to be preloaded
     def preload=(preload)
       @preload = preload
+      @resources.each {|resource| resource.preload = preload}
     end
     
     # True if this file needs to be preloaded before other files

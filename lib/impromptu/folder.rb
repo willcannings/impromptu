@@ -81,10 +81,18 @@ module Impromptu
       @options[:preload]
     end
     
+    # Turn preloading on for this folder (can be done after initialisation)
+    # and run an initial preload. Ensures files are always loaded.
+    def preload!
+      @options[:preload] = true
+      @files.each {|file| file.preload = true}
+      preload
+    end
+    
     # Preload the resources defined by this folder. Should only be called
     # by the Impromptu module, and only once (at app startup).
     def preload
-      return unless preload?
+      return unless preload? || force
       @files.each do |file|
         file.reload
       end
