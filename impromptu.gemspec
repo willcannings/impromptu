@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{impromptu}
-  s.version = "1.5.1"
+  s.version = "1.5.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Will Cannings"]
-  s.date = %q{2011-03-10}
+  s.date = %q{2011-03-11}
   s.description = %q{Component and dependency manager for Ruby}
   s.email = %q{me@willcannings.com}
   s.extra_rdoc_files = [
@@ -36,8 +36,10 @@ Gem::Specification.new do |s|
     "lib/impromptu/symbol.rb",
     "test/framework/copies/extra_klass2.rb",
     "test/framework/copies/new_klass.rb",
+    "test/framework/copies/new_sub_klass.rb",
     "test/framework/copies/new_unseen.rb",
     "test/framework/copies/original_klass.rb",
+    "test/framework/copies/original_sub_klass.rb",
     "test/framework/ext/extensions.rb",
     "test/framework/ext/extensions/blog.rb",
     "test/framework/folder_namespace/stream.rb",
@@ -75,8 +77,10 @@ Gem::Specification.new do |s|
   s.test_files = [
     "test/framework/copies/extra_klass2.rb",
     "test/framework/copies/new_klass.rb",
+    "test/framework/copies/new_sub_klass.rb",
     "test/framework/copies/new_unseen.rb",
     "test/framework/copies/original_klass.rb",
+    "test/framework/copies/original_sub_klass.rb",
     "test/framework/ext/extensions.rb",
     "test/framework/ext/extensions/blog.rb",
     "test/framework/folder_namespace/stream.rb",
