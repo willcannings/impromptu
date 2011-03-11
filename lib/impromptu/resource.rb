@@ -90,6 +90,11 @@ module Impromptu
         end
       end
       
+      # remove from the parent's descendants list
+      if reference.respond_to?(:superclass) &&  reference.superclass.respond_to?(:descendants)
+        reference.superclass.descendants.delete(reference)
+      end
+      
       unless @dont_undef
         @parent.reference.send(:remove_const, @base_symbol)
         @reference = nil

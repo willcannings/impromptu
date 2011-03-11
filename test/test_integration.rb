@@ -323,6 +323,36 @@ class TestIntegration < Test::Unit::TestCase
       end
     end
     
+    context "and changing the definition of sub klass" do
+      setup do
+        Impromptu.root_resource.child(:'Framework::SubKlass').reload
+        new_sub_klass = File.open('test/framework/copies/new_sub_klass.rb').read
+        File.open('test/framework/lib/sub_klass.rb', 'w') do |file|
+          file.write new_sub_klass
+        end
+      end
+      
+      teardown do
+        original_sub_klass = File.open('test/framework/copies/original_sub_klass.rb').read
+        File.open('test/framework/lib/sub_klass.rb', 'w') do |file|
+          file.write original_sub_klass
+        end
+        sleep 1 # because file mod times are in seconds, delay by 1s so further tests so an updated timestamp
+      end
+      
+      should "reload sub klass's definition from disk correctly" do
+        assert_equal false, Framework::SubKlass.respond_to?(:new_sub_method)
+        Impromptu.update
+        assert_respond_to Framework::SubKlass, :new_sub_method
+      end
+      
+      should "ensure stale references to sub klass don't persist in klass's descendants list" do
+        assert_equal 1, Framework::Klass.descendants.size
+        Impromptu.update
+        assert_equal 1, Framework::Klass.descendants.size
+      end
+    end
+    
     
     # ----------------------------------------
     # Adding files
