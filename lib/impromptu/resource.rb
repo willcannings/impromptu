@@ -229,6 +229,13 @@ module Impromptu
       parent.reference.constants.include?(@base_symbol)
     end
     
+    # Mark this resource as having been loaded before Impromptu if the
+    # resource is already defined.
+    def mark_dont_undef
+      @dont_undef = self.loaded?
+      @children.each_value(&:mark_dont_undef)
+    end
+    
     # Loads this resource if it is an extension of an existing class
     # or module (such as an object in the standard library). Should
     # only be called on app startup by Impromptu itself. Recurses to

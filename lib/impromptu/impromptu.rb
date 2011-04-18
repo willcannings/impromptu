@@ -57,12 +57,14 @@ module Impromptu
     # now that we have a complete file/resource graph, freeze
     # the associations at this point (will be unfrozen for reloads)
     components.each do |component|
+      component.load_external_dependencies
       component.freeze
     end
     
     # preload any resources which extend existing standard library
     # modules or classes. we can't catch uses of these resources
     # using const_missing, so we need to load them now.
+    @root_resource.mark_dont_undef
     @root_resource.load_if_extending_stdlib
     
     # load any folders which are to be preloaded
