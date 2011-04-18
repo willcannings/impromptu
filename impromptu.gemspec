@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{impromptu}
-  s.version = "1.5.2"
+  s.version = "1.5.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Will Cannings"]
-  s.date = %q{2011-03-11}
+  s.date = %q{2011-04-18}
   s.description = %q{Component and dependency manager for Ruby}
   s.email = %q{me@willcannings.com}
   s.extra_rdoc_files = [
@@ -72,7 +72,7 @@ Gem::Specification.new do |s|
   ]
   s.homepage = %q{http://github.com/willcannings/impromptu}
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.7}
+  s.rubygems_version = %q{1.6.2}
   s.summary = %q{Component and dependency manager for Ruby}
   s.test_files = [
     "test/framework/copies/extra_klass2.rb",
@@ -112,7 +112,6 @@ Gem::Specification.new do |s|
   ]
 
   if s.respond_to? :specification_version then
-    current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
